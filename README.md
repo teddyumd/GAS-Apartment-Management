@@ -20,7 +20,8 @@ Pagination & Sorting: Ensures smooth navigation through large datasets.
 Installation & Deployment  
 
 Step 1: Download this Excel file to your computer.
-Upload it to Google Drive and open it with Google Sheets.
+Upload it to Google Drive and open it with Google Sheets. Or you can access the file from here:
+https://docs.google.com/spreadsheets/d/1j1U0ze76-tS5D0AA7PnEzCe2bj-QBNKQA54LxeDpEVw/edit?usp=sharing
 
 Step 2: Convert to Google Sheets Format (if needed)
 Click File > Save as Google Sheets to ensure compatibility with the script.
