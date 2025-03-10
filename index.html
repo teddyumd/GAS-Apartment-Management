@@ -1,0 +1,2777 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Apartment Management Dashboard</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    /* Import Google Font for better readability */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background-color: #f9f9f9;
+      /* Soft background for contrast */
+    }
+
+    body {
+      display: flex;
+      align-items: stretch;
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+      width: 15vw;
+      /* Sidebar width adjusts with viewport width */
+      min-width: 200px;
+      /* Minimum width */
+      max-width: 300px;
+      /* Maximum width */
+      height: 100vh;
+      /* Full height */
+      background-color: #333;
+      color: white;
+      transition: width 0.3s ease-in-out;
+      /* Smooth transition */
+    }
+
+    .sidebar h3 {
+      text-align: center;
+      font-weight: 600;
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    .sidebar a,
+    .sidebar-link {
+      display: block;
+      color: white;
+      padding: 12px;
+      text-decoration: none;
+      margin-bottom: 8px;
+      border-radius: 5px;
+      background: #495057;
+      text-align: center;
+      transition: background 0.3s ease;
+      font-size: 14px;
+    }
+
+    #loggedInUser {
+      color: white;
+      font-weight: bold;
+    }
+
+    .sidebar a:hover,
+    .sidebar-link:hover {
+      background: #6c757d;
+    }
+
+    /* Main Content */
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+
+    /* Dashboard Cards */
+    .dashboard {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+      width: 230px;
+      text-align: center;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .card h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .card p {
+      font-size: 16px;
+      margin: 0;
+      font-weight: 400;
+      color: #555;
+    }
+
+    /* 🔹 Unifying Table Design (All tables follow the same style) */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+      font-size: 14px;
+      box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+    }
+
+    /* 🔹 Ensure ALL table headers get the correct blue background */
+    #tenantsTable th,
+    #endedLeaseTable th,
+    #rentPaymentsTable th,
+    #rentDueTable th,
+    #maintenanceTable th,
+    #buildingMaintenanceTable th {
+      background-color: #4bc3a0;
+      /* Consistent blue theme */
+      color: white;
+      padding: 12px;
+      border: 1px solid #dee2e6;
+      text-align: left;
+      cursor: pointer;
+      /* Sorting enabled */
+    }
+
+    /* 🔹 Table Rows */
+    #tenantsTable td,
+    #endedLeaseTable td,
+    #rentPaymentsTable td,
+    #rentDueTable td,
+    #maintenanceTable td,
+    #buildingMaintenanceTable td {
+      background-color: #ffffff;
+      color: #333333;
+      padding: 12px;
+      border: 1px solid #dee2e6;
+    }
+
+    #tenantsTable tr:nth-child(even) td,
+    #endedLeaseTable tr:nth-child(even) td,
+    #rentPaymentsTable tr:nth-child(even) td,
+    #rentDueTable tr:nth-child(even) td,
+    #maintenanceTable tr:nth-child(even) td,
+    #buildingMaintenanceTable tr:nth-child(even) td {
+      background-color: #f8f9fa;
+      /* Light gray for alternating rows */
+    }
+
+    tr:hover {
+      background-color: #e9ecef;
+    }
+
+    /*  Pagination Controls */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 15px;
+    }
+
+    .pagination button {
+      background: #4bc3a0;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      margin: 0 5px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.3s ease;
+    }
+
+    .pagination button:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+
+    .pagination span {
+      font-weight: bold;
+      color: #333;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .dashboard {
+        justify-content: center;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 280px;
+      }
+
+      .sidebar {
+        width: 100%;
+        text-align: center;
+      }
+
+      .sidebar a {
+        display: inline-block;
+        width: auto;
+        padding: 10px 15px;
+      }
+    }
+
+    .search-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: flex-start;
+    }
+
+    #searchBox {
+      width: 300px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    #clearSearchBtn {
+      padding: 8px 12px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h3>Menu</h3>
+    <p id="loggedInUser" style="font-weight: bold; color: #fff;">Checking access...</p> <!--  Display Email Here -->
+    <a href="#" id="openTenantModalBtn" class="sidebar-link">Register Tenant</a>
+    <a href="#" id="openRentPaymentModalBtn" class="sidebar-link">Rent Payment</a>
+    <a href="#" id="openMaintenanceModalBtn" class="sidebar-link">New Tenant Maintenance Request</a>
+    <a href="#" id="openBuildingMaintenanceModalBtn" class="sidebar-link">Building Maintenance Reporting</a>
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+    <h2>BM Apartment Portal</h2>
+    <div class="dashboard">
+      <div class="card">
+        <h3>Total Tenants</h3>
+        <p id="totalTenants">0</p>
+      </div>
+      <div class="card">
+        <h3>Occupied Units</h3>
+        <p id="occupiedUnits">0</p>
+      </div>
+      <div class="card">
+        <h3>Unoccupied Units</h3>
+        <p id="unoccupiedUnits">0</p>
+      </div>
+      <div class="card">
+        <h3>Open Maintenance</h3>
+        <p id="openMaintenance">0</p>
+      </div>
+    </div>
+    <div><br></div>
+    <!-- Search Box (Below Dashboard Cards) -->
+    <div class="search-container">
+      <input type="text" id="searchBox" placeholder="Search across all tables..." class="form-control">
+      <button id="clearSearchBtn" class="btn btn-secondary">Clear Search</button>
+    </div>
+
+    <div><br></div>
+    <!-- Navigation Tabs for Tenant Management, Rent Tracking, and Maintenance -->
+    <ul class="nav nav-tabs" id="dataTabs">
+      <li class="nav-item">
+        <a class="nav-link active" id="tenantsTab" data-bs-toggle="tab" href="#tenantsContainer">Active Tenants</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="endedLeaseTab" data-bs-toggle="tab" href="#endedLeaseContainer">Former Tenants</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="rentPaymentsTab" data-bs-toggle="tab" href="#aggContainer">Rent Transactions</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="rentDueTab" data-bs-toggle="tab" href="#rentDueContainer">Upcoming Rent Due</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="maintenanceTab" data-bs-toggle="tab" href="#maintenanceContainer">Maintenance
+          Requests</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="buildingMaintenanceTab" data-bs-toggle="tab"
+          href="#buildingMaintenanceContainer">Building Upkeep</a>
+      </li>
+    </ul>
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Tenants Table -->
+      <div class="tab-pane fade show active" id="tenantsContainer">
+        <table id="tenantsTable">
+          <thead id="tenantsTableHead">
+            <tr>
+              <th onclick="sortTable('tenants', 'Unit Number')">Unit Number</th>
+              <th onclick="sortTable('tenants', 'Tenant Name')">Tenant Name</th>
+              <th onclick="sortTable('tenants', 'Phone Number')">Phone Number</th>
+              <th onclick="sortTable('tenants', 'Email Address')">Email Address</th>
+              <th onclick="sortTable('tenants', 'Lease Start Date')">Lease Start Date</th>
+              <th onclick="sortTable('tenants', 'Lease End Date')">Lease End Date</th>
+              <th onclick="sortTable('tenants', 'Security Deposit Amount')">Security Deposit</th>
+              <th onclick="sortTable('tenants', 'Status')">Status</th>
+              <th onclick="sortTable('tenants', 'Lease Amount')">Lease Amount</th>
+              <th onclick="sortTable('tenants', 'Payment Frequency')">Payment Frequency</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="tenantsTableBody">
+            <tr>
+              <td colspan="11">Loading tenants...</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="d-flex justify-content-center align-items-center mt-3 gap-2">
+          <button id="prevPageBtn" class="btn btn-secondary" onclick="changePage(-1)" disabled>Previous</button>
+          <span id="pageIndicator">Page 1</span>
+          <button id="nextPageBtn" class="btn btn-secondary" onclick="changePage(1)">Next</button>
+        </div>
+      </div>
+      <!-- Ended Lease Tenants Table -->
+      <div class="tab-pane fade" id="endedLeaseContainer">
+        <table id="endedLeaseTable" class="table">
+          <thead>
+            <tr>
+              <th onclick="sortTable('endedLease', 'Unit Number')">Unit Number</th>
+              <th onclick="sortTable('endedLease', 'Tenant Name')">Tenant Name</th>
+              <th onclick="sortTable('endedLease', 'Phone Number')">Phone Number</th>
+              <th onclick="sortTable('endedLease', 'Email Address')">Email Address</th>
+              <th onclick="sortTable('endedLease', 'Lease Start Date')">Lease Start Date</th>
+              <th onclick="sortTable('endedLease', 'Lease End Date')">Lease End Date</th>
+              <th onclick="sortTable('endedLease', 'Security Deposit Amount')">Security Deposit</th>
+              <th onclick="sortTable('endedLease', 'Lease Amount')">Lease Amount</th>
+              <th onclick="sortTable('endedLease', 'Payment Frequency')">Payment Frequency</th>
+            </tr>
+            </tr>
+          </thead>
+          <tbody id="endedLeaseTableBody">
+            <tr>
+              <td colspan="9">Loading ended lease tenants...</td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Pagination Controls for Ended Lease Tenants -->
+        <div class="d-flex justify-content-center align-items-center mt-3 gap-2">
+          <button id="prevEndedLeasePageBtn" class="btn btn-secondary" onclick="changeEndedLeasePage(-1)" disabled>Previous</button>
+          <span id="endedLeasePageIndicator">Page 1</span>
+          <button id="nextEndedLeasePageBtn" class="btn btn-secondary" onclick="changeEndedLeasePage(1)">Next</button>
+        </div>
+      </div>
+      <!-- Rent Due Table -->
+      <div class="tab-pane fade" id="rentDueContainer">
+        <table id="rentDueTable" class="table">
+          <thead>
+            <tr>
+              <th onclick="sortTable('rentDue', 'Unit Number')">Unit Number</th>
+              <th onclick="sortTable('rentDue', 'Tenant Name')">Tenant Name</th>
+              <th onclick="sortTable('rentDue', 'Next Rent Date')">Next Rent Date</th>
+              <th onclick="sortTable('rentDue', 'Amount Due')">Amount Due</th>
+            </tr>
+          </thead>
+          <tbody id="rentDueTableBody">
+            <tr>
+              <td colspan="4">Loading upcoming rent due...</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination Controls for Rent Due -->
+        <div class="d-flex justify-content-center align-items-center mt-3 gap-2">
+          <button id="prevRentDuePageBtn" class="btn btn-secondary" onclick="changeRentDuePage(-1)" disabled>Previous</button>
+          <span id="rentDuePageIndicator">Page 1</span>
+          <button id="nextRentDuePageBtn" class="btn btn-secondary" onclick="changeRentDuePage(1)">Next</button>
+        </div>
+      </div>
+
+      <!-- Rent Payments Table -->
+      <div class="tab-pane fade" id="aggContainer">
+        <table id="rentPaymentsTable" class="table">
+          <thead>
+            <tr>
+              <th onclick="sortTable('rentPayments', 'Rent Payment ID')">Rent Payment ID</th>
+              <th onclick="sortTable('rentPayments', 'Unit Number')">Unit Number</th>
+              <th onclick="sortTable('rentPayments', 'Tenant Name')">Tenant Name</th>
+              <th onclick="sortTable('rentPayments', 'Frequency')">Frequency</th>
+              <th onclick="sortTable('rentPayments', 'Payment Date')">Payment Date</th>
+              <th onclick="sortTable('rentPayments', 'Amount')">Amount</th>
+              <th onclick="sortTable('rentPayments', 'Next Due Date')">Next Due Date</th>
+              <th onclick="sortTable('rentPayments', 'Status')">Status</th>
+              <th>Notes</th>
+              <th>Payment URL Link</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="rentPaymentsTableBody">
+            <tr>
+              <td colspan="11">Loading rent payments...</td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Pagination Controls for Rent Payments -->
+        <div class="d-flex justify-content-center align-items-center mt-3 gap-2">
+          <button id="prevRentPageBtn" class="btn btn-secondary" onclick="changeRentPage(-1)" disabled>Previous</button>
+          <span id="rentPageIndicator">Page 1</span>
+          <button id="nextRentPageBtn" class="btn btn-secondary" onclick="changeRentPage(1)">Next</button>
+        </div>
+
+      </div>
+      <!-- Maintenance Requests Table -->
+      <div class="tab-pane fade" id="maintenanceContainer">
+        <table id="maintenanceTable" class="table">
+          <thead>
+            <tr>
+              <th onclick="sortTable('maintenance', 'Request ID')">Request ID</th>
+              <th onclick="sortTable('maintenance', 'Unit Number')">Unit Number</th>
+              <th onclick="sortTable('maintenance', 'Tenant Name')">Tenant Name</th>
+              <th onclick="sortTable('maintenance', 'Issue Description')">Issue Description</th>
+              <th onclick="sortTable('maintenance', 'Date Submitted')">Date Submitted</th>
+              <th onclick="sortTable('maintenance', 'Status')">Status</th>
+              <th onclick="sortTable('maintenance', 'Date Resolved')">Date Resolved</th>
+              <th onclick="sortTable('maintenance', 'Days to Complete')">Days to Complete</th>
+              <th>Notes</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="maintenanceTableBody">
+            <tr>
+              <td colspan="9">Loading maintenance requests...</td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Pagination Controls for Maintenance Requests -->
+        <div class="d-flex justify-content-center align-items-center mt-3 gap-2">
+          <button id="prevMaintenancePageBtn" class="btn btn-secondary" onclick="changeMaintenancePage(-1)" disabled>Previous</button>
+          <span id="maintenancePageIndicator">Page 1</span>
+          <button id="nextMaintenancePageBtn" class="btn btn-secondary" onclick="changeMaintenancePage(1)">Next</button>
+        </div>
+      </div>
+      <!-- Building Maintenance Table -->
+      <div class="tab-pane fade" id="buildingMaintenanceContainer">
+        <table id="buildingMaintenanceTable" class="table">
+          <thead>
+            <tr>
+              <th onclick="sortTable('buildingMaintenance', 'Maintenance REQ ID')">Maintenance REQ ID</th>
+              <th onclick="sortTable('buildingMaintenance', 'Task Name')">Task Name</th>
+              <th onclick="sortTable('buildingMaintenance', 'Due Date')">Due Date</th>
+              <th onclick="sortTable('buildingMaintenance', 'Completion Status')">Completion Status</th>
+              <th onclick="sortTable('buildingMaintenance', 'Expense Amount')">Expense Amount</th>
+              <th onclick="sortTable('buildingMaintenance', 'Date Completed')">Date Completed</th>
+              <th>Notes</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="buildingMaintenanceTableBody">
+            <tr>
+              <td colspan="7">Loading building maintenance records...</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination Controls for Building Maintenance -->
+        <div class="d-flex justify-content-center align-items-center mt-3 gap-2">
+          <button id="prevBuildingMaintenancePageBtn" class="btn btn-secondary" onclick="changeBuildingMaintenancePage(-1)" disabled>Previous</button>
+          <span id="buildingMaintenancePageIndicator">Page 1</span>
+          <button id="nextBuildingMaintenancePageBtn" class="btn btn-secondary" onclick="changeBuildingMaintenancePage(1)">Next</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+  <!-- Tenant Registration Modal -->
+  <div id="tenantModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Register Tenant</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="tenantForm">
+            <div class="mb-3">
+              <label class="form-label">Available Unit Number</label>
+              <select id="unitNumber" class="form-select" required></select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tenant Name</label>
+              <input type="text" id="tenantName" class="form-control" required pattern="[A-Za-z\s]+">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" id="phoneNumber" class="form-control" required pattern="0\d{9}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email Address</label>
+              <input type="email" id="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Lease Start Date</label>
+              <input type="date" id="leaseStartDate" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Lease End Date</label>
+              <input type="date" id="leaseEndDate" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Lease Amount</label>
+              <input type="number" id="leaseAmount" class="form-control" required min="0" step="0.01">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Security Deposit Amount</label>
+              <input type="number" id="securityDeposit" class="form-control" required min="0" step="0.01">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Status</label>
+              <select id="status" class="form-select" required>
+                <option value="Current Tenant" selected>Current Tenant</option>
+                <option value="Ended Lease">Ended Lease</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Payment Frequency</label>
+              <select id="paymentFrequency" class="form-select" required>
+                <option value="Monthly" selected>Monthly</option>
+                <option value="Every 2 Months">Every 2 Months</option>
+                <option value="Every 3 Months">Every 3 Months</option>
+                <option value="Every 4 Months">Every 4 Months</option>
+                <option value="Every 6 Months">Every 6 Months</option>
+                <option value="Yearly">Yearly</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-primary" id="submitTenantFormBtn">Register Tenant</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Rent Payment Modal -->
+    <div id="rentPaymentModal" class="modal fade" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Record Rent Payment</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="rentPaymentForm">
+              <!--  Auto-generated Rent Payment ID -->
+              <div class="mb-3">
+                <label class="form-label">Rent Payment ID</label>
+                <input type="text" id="rentPaymentID" class="form-control" readonly>
+              </div>
+
+            <div class="mb-3">
+              <label class="form-label">Unit Number</label>
+              <select id="rentUnitNumber" class="form-select" required></select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Tenant Name</label>
+              <input type="text" id="rentTenantName" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Frequency</label>
+              <select id="rentFrequency" class="form-select" required>
+              <option value="Monthly" selected>Monthly</option>
+              <option value="Every 2 Months">Every 2 Months</option>
+              <option value="Every 3 Months">Every 3 Months</option>
+              <option value="Every 4 Months">Every 4 Months</option>
+              <option value="Every 6 Months">Every 6 Months</option>
+              <option value="Yearly">Yearly</option>
+            </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Payment Date</label>
+              <input type="date" id="rentPaymentDate" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Amount</label>
+              <input type="number" id="rentAmount" class="form-control" required min="0" step="0.01">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Next Due Date</label>
+              <input type="text" id="rentNextDueDate" class="form-control" readonly>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Status</label>
+              <select id="rentStatus" class="form-select" required>
+              <option value="On Time Payment" selected>On Time Payment</option>
+              <option value="Late Payment">Late Payment</option>
+            </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Notes</label>
+              <textarea id="rentNotes" class="form-control"></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Upload Payment Receipt (optional)</label>
+              <input type="file" id="rentReceiptFile" class="form-control">
+            </div>
+
+            <button type="button" id="submitRentPaymentFormBtn" class="btn btn-primary">Record Payment</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Maintenance Request Modal -->
+  <div id="maintenanceModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">New Tenant Maintenance Request</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="maintenanceForm">
+            <div class="mb-3">
+              <label class="form-label">Request ID</label>
+              <input type="text" id="requestID" class="form-control" readonly>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Unit Number</label>
+              <select id="maintenanceUnitNumber" class="form-select" required></select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tenant Name</label>
+              <input type="text" id="maintenanceTenantName" class="form-control" readonly>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Issue Description</label>
+              <textarea id="issueDescription" class="form-control" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Date Submitted</label>
+              <input type="text" id="dateSubmitted" class="form-control" readonly>
+            </div>
+            <button type="button" id="submitMaintenanceFormBtn" class="btn btn-primary">Submit Request</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Building Maintenance Modal -->
+  <div id="buildingMaintenanceModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Building Maintenance Reporting</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="buildingMaintenanceForm">
+            <div class="mb-3">
+              <label class="form-label">Maintenance REQ ID</label>
+              <input type="text" id="maintenanceReqID" class="form-control" readonly>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Task Name</label>
+              <input type="text" id="taskName" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Due Date</label>
+              <input type="date" id="dueDate" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Completion Status</label>
+              <select id="completionStatus" class="form-select">
+              <option value="Pending" selected>Pending</option>
+              <option value="Completed">Completed</option>
+            </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Expense Amount</label>
+              <input type="number" id="expenseAmount" class="form-control" min="1" step="0.01">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Date Completed</label>
+              <input type="date" id="dateCompleted" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Notes</label>
+              <textarea id="notes" class="form-control"></textarea>
+            </div>
+            <button type="button" id="submitBuildingMaintenanceFormBtn" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Record Rent Payment Modal -->
+  <div id="recordRentPaymentModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Record Rent Payment</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="recordRentPaymentForm">
+            <!-- Auto-generated Rent Payment ID (Read-Only) -->
+            <div class="mb-3">
+              <label class="form-label">Rent Payment ID</label>
+              <input type="text" id="recordRentPaymentID" class="form-control" readonly>
+            </div>
+
+            <!-- Read-Only Unit Number -->
+            <div class="mb-3">
+              <label class="form-label">Unit Number</label>
+              <input type="text" id="recordRentUnitNumber" class="form-control" readonly>
+            </div>
+
+            <!-- Tenant Name -->
+            <div class="mb-3">
+              <label class="form-label">Tenant Name</label>
+              <input type="text" id="recordRentTenantName" class="form-control" readonly>
+            </div>
+
+            <!-- Payment Frequency -->
+            <div class="mb-3">
+              <label class="form-label">Frequency</label>
+              <input type="text" id="recordRentFrequency" class="form-control" readonly>
+            </div>
+
+            <!-- Payment Date -->
+            <div class="mb-3">
+              <label class="form-label">Payment Date</label>
+              <input type="date" id="recordRentPaymentDate" class="form-control" required>
+            </div>
+
+            <!-- Amount -->
+            <div class="mb-3">
+              <label class="form-label">Amount</label>
+              <input type="number" id="recordRentAmount" class="form-control" required min="0" step="0.01">
+            </div>
+
+            <!-- Auto-Calculated Next Due Date -->
+            <div class="mb-3">
+              <label class="form-label">Next Due Date</label>
+              <input type="text" id="recordRentNextDueDate" class="form-control" readonly>
+            </div>
+
+            <!-- Status -->
+            <div class="mb-3">
+              <label class="form-label">Status</label>
+              <select id="recordRentStatus" class="form-select" required>
+                <option value="On Time Payment" selected>On Time Payment</option>
+                <option value="Late Payment">Late Payment</option>
+              </select>
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-3">
+              <label class="form-label">Notes</label>
+              <textarea id="recordRentNotes" class="form-control"></textarea>
+            </div>
+
+            <!-- Upload Receipt (Optional) -->
+            <div class="mb-3">
+              <label class="form-label">Upload Payment Receipt (optional)</label>
+              <input type="file" id="recordRentReceiptFile" class="form-control">
+            </div>
+
+            <button type="button" id="submitRecordRentPaymentFormBtn" class="btn btn-primary">Record Payment</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Maintenance Requests Edit Modal -->
+  <div id="editMaintenanceModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Maintenance Request</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editMaintenanceForm">
+            <input type="hidden" id="editMaintenanceIndex">
+
+            <div class="mb-3">
+              <label class="form-label">Request ID</label>
+              <input type="text" id="editRequestID" class="form-control" readonly>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Unit Number</label>
+              <input type="text" id="editUnitNumber" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Tenant Name</label>
+              <input type="text" id="editTenantName" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Issue Description</label>
+              <textarea id="editIssueDescription" class="form-control" required></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Date Submitted</label>
+              <input type="date" id="editDateSubmitted" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Status</label>
+              <select id="editMaintenanceStatus" class="form-select">
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="Pending">Pending</option>
+            </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Date Resolved</label>
+              <input type="date" id="editDateResolved" class="form-control">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Days to Complete</label>
+              <input type="number" id="editDaysToComplete" class="form-control" readonly>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Notes</label>
+              <textarea id="editMaintenanceNotes" class="form-control"></textarea>
+            </div>
+
+            <button type="button" class="btn btn-primary" onclick="saveMaintenanceEdit()">Save Changes</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Building Maintenance Edit Modal -->
+  <div id="editBuildingMaintenanceModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Building Maintenance</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editBuildingMaintenanceForm">
+            <input type="hidden" id="editBuildingIndex">
+
+            <div class="mb-3">
+              <label class="form-label">Maintenance REQ ID</label>
+              <input type="text" id="editBuildingReqID" class="form-control" readonly>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Task Name</label>
+              <input type="text" id="editBuildingTaskName" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Due Date</label>
+              <input type="date" id="editBuildingDueDate" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Completion Status</label>
+              <select id="editBuildingStatus" class="form-select">
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="Pending">Pending</option>
+            </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Expense Amount</label>
+              <input type="number" id="editBuildingExpense" class="form-control">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Date Completed</label>
+              <input type="date" id="editBuildingDateCompleted" class="form-control">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Notes</label>
+              <textarea id="editBuildingNotes" class="form-control"></textarea>
+            </div>
+
+            <button type="button" class="btn btn-primary" onclick="saveBuildingMaintenanceEdit()">Save Changes</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JavaScript -->
+  <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script defer>
+    let tenantsData = [];
+    let currentPage = 1;
+    const rowsPerPage = 8;
+    let sortColumn = "";
+    let sortDirection = 1; // 1 for ascending, -1 for descending
+    let maintenanceData = []; // Stores all maintenance requests
+    let currentMaintenancePage = 1;
+    const maintenanceRowsPerPage = 8; // Adjust this as needed
+    let buildingMaintenanceData = []; // Stores all Building Maintenance records
+    let currentBuildingMaintenancePage = 1;
+    const buildingMaintenanceRowsPerPage = 8; // Adjust this as needed
+    let rentPaymentsData = []; // 🔹 Store all rent payments
+    let currentRentPage = 1;
+    const rentRowsPerPage = 8; // 🔹 Adjustable rows per page
+    let endedLeaseData = []; // 🔹 Stores "Ended Lease" tenants
+    let currentEndedLeasePage = 1;
+    const endedLeaseRowsPerPage = 8; // 🔹 Adjustable rows per page
+    let rentDueData = [];
+    let rentDueCurrentPage = 1;
+    const rentDueRowsPerPage = 8; // Adjust as needed
+
+    function verifyUserAccess() {
+        google.script.run.withSuccessHandler(function (response) {
+            const userElement = document.getElementById("loggedInUser");
+            const mainContent = document.querySelector(".main");
+            const sidebar = document.querySelector(".sidebar");
+
+            if (!userElement || !mainContent || !sidebar) {
+                console.error("Error: One or more DOM elements not found!");
+                return;
+            }
+
+            if (response.access) {
+                userElement.innerHTML = `<span style="color: white;">Logged in as: ${response.email}</span>`;
+                console.log("Access granted:", response.email);
+            } else {
+                sidebar.style.display = "none";
+                mainContent.innerHTML = `<h2 style="text-align:center; color:red;">${response.message}</h2>`;
+                console.warn("Access denied. Response:", response);
+            }
+        }).checkUserAccess(); // Ensure this calls checkUserAccess()
+    }
+
+    // Fetch Rent Due Data
+    function fetchRentDueData() {
+      google.script.run
+        .withSuccessHandler(function (response) {
+          //console.log("Rent Due Data Response:", response);
+
+          if (!response || !Array.isArray(response)) {
+            console.error("Invalid data received for Rent Due.");
+            document.getElementById("rentDueTableBody").innerHTML =
+              "<tr><td colspan='4'>No rent due records found</td></tr>";
+            return;
+          }
+
+          rentDueData = response;
+          rentDueCurrentPage = 1;
+          displayRentDuePage(rentDueCurrentPage);
+        })
+        .withFailureHandler(function (error) {
+          console.error("Error fetching Rent Due Data:", error.message);
+          alert("Failed to load Rent Due records. Check console for details.");
+        })
+        .getRentDueRecords();
+    }
+
+
+    // Display Rent Due Table with Pagination
+    function displayRentDuePage(page) {
+        const tbody = document.getElementById("rentDueTableBody");
+        tbody.innerHTML = "";
+
+        if (!rentDueData || rentDueData.length === 0) {
+            console.warn("No rent due records available.");
+            tbody.innerHTML = "<tr><td colspan='4'>No rent due records found</td></tr>";
+            return;
+        }
+
+        const startIndex = (page - 1) * rentDueRowsPerPage;
+        const endIndex = Math.min(startIndex + rentDueRowsPerPage, rentDueData.length);
+        const pageData = rentDueData.slice(startIndex, endIndex);
+
+        pageData.forEach((record) => {
+            const tr = document.createElement("tr");
+
+            ["Unit Number", "Tenant Name", "Next Due Date", "Amount Due"].forEach((key) => {
+                const td = document.createElement("td");
+
+                // Debug: Log the value before formatting
+                //console.log(`Processing ${key}:`, record[key]);
+
+                let value = record[key] || "N/A";
+                if (key === "Next Due Date") {
+                    value = formatDateDisplay(value);
+                }
+
+                td.textContent = value;
+                tr.appendChild(td);
+            });
+
+            tbody.appendChild(tr);
+        });
+
+        updateRentDuePaginationControls();
+    }
+
+
+
+    // Pagination Controls for Rent Due Table
+    function updateRentDuePaginationControls() {
+      const totalPages = Math.ceil(rentDueData.length / rentDueRowsPerPage);
+      document.getElementById("prevRentDuePageBtn").disabled = (rentDueCurrentPage === 1);
+      document.getElementById("nextRentDuePageBtn").disabled = (rentDueCurrentPage >= totalPages);
+      document.getElementById("rentDuePageIndicator").innerText = `Page ${rentDueCurrentPage} of ${totalPages}`;
+    }
+
+    // Change Rent Due Page
+    function changeRentDuePage(direction) {
+      rentDueCurrentPage += direction;
+      displayRentDuePage(rentDueCurrentPage);
+    }
+    
+    function formatDateDisplay(dateValue) {
+        if (!dateValue || dateValue === "N/A") return "N/A"; // Handle empty values
+
+        let dateObj;
+
+        // If it's already a Date object
+        if (dateValue instanceof Date && !isNaN(dateValue)) {
+            dateObj = dateValue;
+        } 
+        // If it's an ISO string (e.g., "2025-02-24T21:00:00.000Z")
+        else if (typeof dateValue === "string" && dateValue.includes("T")) {
+            dateObj = new Date(dateValue);
+        }
+        // If it's a plain date string (e.g., "2025-02-24")
+        else if (typeof dateValue === "string" && dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            dateObj = new Date(dateValue + "T00:00:00");
+        }
+        // If it's a number (Excel serial date)
+        else if (!isNaN(dateValue) && dateValue > 10000) {
+            dateObj = new Date((dateValue - 25569) * 86400 * 1000);
+        } 
+        else {
+            return "Invalid Date";
+        }
+
+        if (isNaN(dateObj.getTime())) return "N/A"; // Handle invalid dates
+
+        // Format as "Feb 24, 2025"
+        return dateObj.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+    }
+    // Opens the tenant registration modal and loads available units
+    function openTenantModal() {
+      loadVacantUnits();
+      const modalElement = document.getElementById("tenantModal");
+      const modal = new bootstrap.Modal(modalElement);
+      modal.show();
+    }
+    
+    function loadRentPayments() {
+      google.script.run.withSuccessHandler(function(responseString) {
+        //console.log("Rent Payments Response:", responseString); // Debugging
+
+        try {
+          var response = JSON.parse(responseString);
+          if (!response.success) {
+            alert(response.message);
+            return;
+          }
+
+          rentPaymentsData = response.payments; // Store all payments
+
+          if (rentPaymentsData.length === 0) {
+            document.getElementById("rentPaymentsTableBody").innerHTML = "<tr><td colspan='9'>No rent payments found</td></tr>";
+            return;
+          }
+
+          currentRentPage = 1; // Reset to first page
+          displayRentPaymentsPage(currentRentPage); // Display first page
+
+        } catch (e) {
+          console.error("Error parsing rent payments data:", e);
+        }
+      }).getRentPayments();
+    }
+    function openBuildingMaintenanceModal() {
+      google.script.run.withSuccessHandler(function(newID) {
+        document.getElementById("maintenanceReqID").value = newID;
+      }).getNewBuildingMaintenanceID();
+
+      var modalElement = document.getElementById("buildingMaintenanceModal");
+      var modal = new bootstrap.Modal(modalElement);
+      modal.show();
+    }
+
+    function submitBuildingMaintenanceForm() {
+      var data = {
+        taskName: document.getElementById("taskName").value.trim(),
+        dueDate: document.getElementById("dueDate").value,
+        completionStatus: document.getElementById("completionStatus").value,
+        expenseAmount: document.getElementById("expenseAmount").value.trim(),
+        dateCompleted: document.getElementById("dateCompleted").value,
+        notes: document.getElementById("notes").value.trim()
+      };
+
+      if (!data.taskName || !data.dueDate ) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      google.script.run.withSuccessHandler(function(response) {
+        alert(response.message);
+        if (response.success) {
+          document.getElementById("buildingMaintenanceForm").reset();
+          var modal = bootstrap.Modal.getInstance(document.getElementById("buildingMaintenanceModal"));
+          modal.hide();
+        }
+      }).recordBuildingMaintenance(data);
+    }
+    function displayRentPaymentsPage(page) {
+        const tbody = document.getElementById("rentPaymentsTableBody");
+        tbody.innerHTML = "";
+
+        // Ensure rentPaymentsData is loaded
+        if (!rentPaymentsData || rentPaymentsData.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='10'>No rent payments found</td></tr>";
+            updatePaginationControls(); // Update controls even when empty
+            return;
+        }
+
+        const startIndex = (page - 1) * rentRowsPerPage;
+        const endIndex = Math.min(startIndex + rentRowsPerPage, rentPaymentsData.length);
+        const pageData = rentPaymentsData.slice(startIndex, endIndex);
+
+        // Debugging: Log the sliced data
+        //console.log(`Displaying Rent Payments from index ${startIndex} to ${endIndex}`);
+        
+        pageData.forEach((record, index) => {
+            const tr = document.createElement("tr");
+
+            for (const key in record) {
+                const td = document.createElement("td");
+
+                if (key === "Payment URL Link" && record[key]) {
+                    const link = document.createElement("a");
+                    link.href = record[key];
+                    link.target = "_blank"; // Open in a new tab
+                    link.textContent = "View Receipt";
+                    link.className = "btn btn-link"; // Style the link
+                    td.appendChild(link);
+                }  
+                else if (key === "Payment Date" || key === "Next Due Date") {
+                    td.textContent = formatDateDisplay(record[key]); // Format dates correctly
+                } 
+                else {
+                    td.textContent = record[key] || "N/A";
+                }
+
+                tr.appendChild(td);
+            }
+
+            // Add Action buttons (Edit & Delete)
+            const actionTd = document.createElement("td");
+            const editBtn = document.createElement("button");
+            editBtn.className = "btn btn-primary btn-sm me-1";
+            editBtn.innerHTML = "Edit";
+            editBtn.onclick = function () {
+                openEditModal("rentPayments", startIndex + index); // Adjust index for full dataset
+            };
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "btn btn-danger btn-sm";
+            deleteBtn.innerHTML = "Delete";
+            deleteBtn.onclick = function () {
+                confirmDelete("rentPayments", startIndex + index); // Adjust index for full dataset
+            };
+
+            actionTd.appendChild(editBtn);
+            actionTd.appendChild(deleteBtn);
+            tr.appendChild(actionTd);
+
+            tbody.appendChild(tr);
+        });
+
+        // Update pagination controls
+        updatePaginationControls();
+    }
+    function changeRentPage(direction) {
+        currentRentPage += direction; // Move forward or backward
+        displayRentPaymentsPage(currentRentPage);
+        updateRentPaginationControls();
+    }
+    function updateRentPaginationControls() {
+        const totalPages = Math.ceil(rentPaymentsData.length / rentRowsPerPage); // Ensure correct total pages calculation
+        
+        // Ensure current page is within valid range
+        currentRentPage = Math.max(1, Math.min(currentRentPage, totalPages)); 
+
+        // Update button states
+        document.getElementById("prevRentPageBtn").disabled = currentRentPage <= 1;
+        document.getElementById("nextRentPageBtn").disabled = currentRentPage >= totalPages;
+
+        // Update page indicator
+        document.getElementById("rentPageIndicator").innerText = `Page ${currentRentPage} of ${totalPages}`;
+
+        //console.log(`Rent Pagination Updated → Total Pages: ${totalPages}, Current Page: ${currentRentPage}`);
+    }
+
+    // Fetch available unit numbers from the server for tenant registration
+    function loadVacantUnits() {
+      google.script.run.withSuccessHandler(function(units) {
+        const unitDropdown = document.getElementById("unitNumber");
+        unitDropdown.innerHTML = "";
+        if (!units.length) {
+          unitDropdown.innerHTML = "<option value=''>No vacant units available</option>";
+        } else {
+          units.forEach(function(unit) {
+            const option = document.createElement("option");
+            option.value = unit;
+            option.textContent = unit;
+            unitDropdown.appendChild(option);
+          });
+        }
+      }).getVacantUnits();
+    }
+    // Handles tenant registration form submission
+    function submitTenantForm() {
+      const tenantName = document.getElementById("tenantName").value.trim();
+      const phoneNumber = document.getElementById("phoneNumber").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const leaseAmount = document.getElementById("leaseAmount").value.trim();
+      const securityDeposit = document.getElementById("securityDeposit").value.trim();
+      const leaseStart = document.getElementById("leaseStartDate").value;
+      const leaseEnd = document.getElementById("leaseEndDate").value;
+      const paymentFrequency = document.getElementById("paymentFrequency").value.trim();
+      if (!isValidText(tenantName)) {
+        alert("Tenant name should only contain letters and spaces.");
+        return;
+      }
+      if (!isValidPhoneNumber(phoneNumber)) {
+        alert("Phone number must be a 10-digit number starting with 0.");
+        return;
+      }
+      if (!isValidEmail(email)) {
+        alert("Please enter a valid email address.");
+        return;
+      }
+      if (!isValidNumber(leaseAmount) || leaseAmount <= 0) {
+        alert("Lease amount must be a valid positive number.");
+        return;
+      }
+      if (!isValidNumber(securityDeposit) || securityDeposit < 0) {
+        alert("Security deposit must be a valid number (0 or more).");
+        return;
+      }
+      if (new Date(leaseStart) >= new Date(leaseEnd)) {
+        alert("Lease End Date must be later than Lease Start Date.");
+        return;
+      }
+      const tenantData = {
+        unitNumber: document.getElementById("unitNumber").value,
+        tenantName: tenantName,
+        phoneNumber: phoneNumber,
+        email: email,
+        leaseStartDate: leaseStart,
+        leaseEndDate: leaseEnd,
+        leaseAmount: leaseAmount,
+        securityDeposit: securityDeposit,
+        status: document.getElementById("status").value,
+        paymentFrequency: paymentFrequency
+      };
+      google.script.run.withSuccessHandler(function(response) {
+        alert(response.message);
+        if (response.success) {
+          document.getElementById("tenantForm").reset();
+          const modal = bootstrap.Modal.getInstance(document.getElementById("tenantModal"));
+          modal.hide();
+          refreshData();
+        }
+      }).registerTenant(tenantData);
+    }
+    // Validation helper functions
+    function isValidText(text) {
+      return /^[A-Za-z\s]+$/.test(text);
+    }
+    function isValidPhoneNumber(phone) {
+      return /^0\d{9}$/.test(phone);
+    }
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+    function isValidNumber(value) {
+      return /^\d+(\.\d{1,2})?$/.test(value);
+    }
+    // Loads dashboard statistics and updates cards
+    function loadDashboard() {
+      google.script.run.withSuccessHandler(function(data) {
+        if (!data.success) {
+          alert(data.message);
+          return;
+        }
+        document.getElementById("totalTenants").innerText = data.totalTenants;
+        document.getElementById("occupiedUnits").innerText = data.occupiedUnits;
+        document.getElementById("unoccupiedUnits").innerText = data.vacantUnits;
+        document.getElementById("openMaintenance").innerText = data.openMaintenanceRequests;
+      }).getDashboardData();
+    }
+    // Loads tenant records and initializes pagination
+    function loadTenants() {
+      google.script.run.withSuccessHandler(function(responseString) {
+        try {
+          var response = JSON.parse(responseString);
+          if (!response.success) {
+            alert(response.message);
+            return;
+          }
+
+          // 🔹 Separate Current and Ended Lease Tenants
+          tenantsData = response.tenants.filter(tenant => tenant["Status"] === "Current Tenant");
+          endedLeaseData = response.tenants.filter(tenant => tenant["Status"] === "Ended Lease");
+
+          if (tenantsData.length === 0) {
+            document.getElementById("tenantsTableBody").innerHTML = "<tr><td colspan='11'>No current tenants found</td></tr>";
+          } else {
+            currentPage = 1;
+            displayPage(currentPage); // Show first page of current tenants
+          }
+
+          if (endedLeaseData.length === 0) {
+            document.getElementById("endedLeaseTableBody").innerHTML = "<tr><td colspan='9'>No ended lease tenants found</td></tr>";
+          } else {
+            currentEndedLeasePage = 1;
+            displayEndedLeaseTenantsPage(currentEndedLeasePage);
+          }
+
+        } catch (error) {
+          console.error("Error processing tenant data:", error);
+          alert("Error loading tenants.");
+        }
+      }).getAllTenants();
+    }
+    function displayEndedLeaseTenantsPage(page) {
+      const tbody = document.getElementById("endedLeaseTableBody");
+      tbody.innerHTML = "";
+
+      const startIndex = (page - 1) * endedLeaseRowsPerPage;
+      const endIndex = Math.min(startIndex + endedLeaseRowsPerPage, endedLeaseData.length);
+      const pageData = endedLeaseData.slice(startIndex, endIndex);
+
+      if (!pageData.length) {
+        tbody.innerHTML = "<tr><td colspan='9'>No ended lease tenants found</td></tr>";
+        return;
+      }
+
+      pageData.forEach(tenant => {
+        var tr = document.createElement("tr");
+
+        var columns = [
+          "Unit Number",
+          "Tenant Name",
+          "Phone Number",
+          "Email Address",
+          "Lease Start Date",
+          "Lease End Date",
+          "Security Deposit Amount",
+          "Lease Amount",
+          "Payment Frequency"
+        ];
+
+        columns.forEach(col => {
+          var td = document.createElement("td");
+          var value = tenant[col] || "N/A";
+          if (col === "Lease Amount" || col === "Security Deposit Amount") value = formatCurrency(value);
+          if (col === "Lease Start Date" || col === "Lease End Date") value = formatDate(value);
+          td.textContent = value;
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+
+      updateEndedLeasePaginationControls();
+    }
+    function changeEndedLeasePage(direction) {
+      const totalPages = Math.ceil(endedLeaseData.length / endedLeaseRowsPerPage);
+      const newPage = currentEndedLeasePage + direction;
+
+      if (newPage < 1 || newPage > totalPages) return;
+
+      currentEndedLeasePage = newPage;
+      displayEndedLeaseTenantsPage(currentEndedLeasePage);
+    }
+    function updateEndedLeasePaginationControls() {
+      const totalPages = Math.ceil(endedLeaseData.length / endedLeaseRowsPerPage);
+      document.getElementById("prevEndedLeasePageBtn").disabled = (currentEndedLeasePage === 1);
+      document.getElementById("nextEndedLeasePageBtn").disabled = (currentEndedLeasePage >= totalPages);
+      document.getElementById("endedLeasePageIndicator").innerText = `Page ${currentEndedLeasePage} of ${totalPages}`;
+    }
+
+    function displayEndedLeaseTenants() {
+      const tbody = document.getElementById("endedLeaseTableBody");
+      tbody.innerHTML = "";
+
+      if (endedLeaseData.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='9'>No ended lease tenants found</td></tr>";
+        return;
+      }
+
+      endedLeaseData.forEach(tenant => {
+        var tr = document.createElement("tr");
+
+        var columns = [
+          "Unit Number",
+          "Tenant Name",
+          "Phone Number",
+          "Email Address",
+          "Lease Start Date",
+          "Lease End Date",
+          "Security Deposit Amount",
+          "Lease Amount",
+          "Payment Frequency"
+        ];
+
+        columns.forEach(col => {
+          var td = document.createElement("td");
+          var value = tenant[col] || "N/A";
+          if (col === "Lease Amount" || col === "Security Deposit Amount") value = formatCurrency(value);
+          if (col === "Lease Start Date" || col === "Lease End Date") value = formatDate(value);
+          td.textContent = value;
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
+    // Function to open the Rent Payment Modal (without pre-population)
+    function openRentPaymentModal(unitNumber = null, tenantName = null, frequency = null, amount = null) {
+        google.script.run.withSuccessHandler(function(response) {
+            if (!response || !response.nextID || !response.tenants) {
+                alert("Error fetching rent payment data. Please try again.");
+                return;
+            }
+
+            const { nextID, tenants } = response;
+
+            // Set Rent Payment ID
+            document.getElementById("rentPaymentID").value = nextID || "";
+
+            // Populate Unit Number Dropdown
+            let unitSelect = document.getElementById("rentUnitNumber");
+            unitSelect.innerHTML = '<option value="" selected disabled>Select Unit</option>';
+
+            tenants.forEach(tenant => {
+                let option = document.createElement("option");
+                option.value = tenant.unitNumber;
+                option.textContent = tenant.unitNumber;
+                unitSelect.appendChild(option);
+            });
+
+            // If "Record Payment" is clicked from a tenant, pre-fill data
+            document.getElementById("rentUnitNumber").value = unitNumber || "";
+            document.getElementById("rentTenantName").value = tenantName || "";
+            document.getElementById("rentFrequency").value = frequency || "";
+            document.getElementById("rentAmount").value = amount || "";
+            document.getElementById("rentPaymentDate").value = "";
+            document.getElementById("rentNextDueDate").value = "";
+            document.getElementById("rentStatus").value = "On Time Payment";
+            document.getElementById("rentNotes").value = "";
+            document.getElementById("rentReceiptFile").value = "";
+
+            // Open the modal
+            new bootstrap.Modal(document.getElementById("rentPaymentModal")).show();
+        }).withFailureHandler(function(error) {
+            alert("Failed to load rent payment data: " + error.message);
+        }).getNextRentPaymentIDAndTenants();
+    }
+
+
+
+    // Function to load tenant options for the Rent Payment Modal and pre-populate fields
+    function loadTenantOptionsForPayment() {
+      google.script.run.withSuccessHandler(function(responseString) {
+        try {
+          var response = JSON.parse(responseString);
+          if (!response.success) {
+            alert(response.message);
+            return;
+          }
+          // Store all tenant data globally.
+          tenantsData = response.tenants;
+          
+          // Filter to only include current tenants.
+          var currentTenants = tenantsData.filter(function(tenant) {
+            return String(tenant["Status"]).trim() === "Current Tenant";
+          });
+          
+          var unitDropdown = document.getElementById("rentUnitNumber");
+          var tenantDropdown = document.getElementById("rentTenantName");
+          unitDropdown.innerHTML = "";
+          tenantDropdown.innerHTML = "";
+          
+          // Populate Unit Number dropdown.
+          currentTenants.forEach(function(tenant) {
+            var option = document.createElement("option");
+            option.value = tenant["Unit Number"];
+            option.textContent = tenant["Unit Number"];
+            unitDropdown.appendChild(option);
+          });
+          
+          // When a unit is selected, populate related fields.
+          unitDropdown.addEventListener("change", function() {
+            var selectedUnit = unitDropdown.value;
+            var tenantRecord = currentTenants.find(function(t) {
+              return String(t["Unit Number"]).trim() === String(selectedUnit).trim();
+            });
+            if (tenantRecord) {
+              // Set Tenant Name (read-only) from tenant record.
+              document.getElementById("rentTenantName").value = tenantRecord["Tenant Name"] || "";
+              // Populate Frequency and Amount from tenant record.
+              document.getElementById("rentFrequency").value = tenantRecord["Payment Frequency"] || "Monthly";
+              document.getElementById("rentAmount").value = tenantRecord["Lease Amount"] || "";
+              // Default Payment Date to today's date.
+              var today = new Date();
+              document.getElementById("rentPaymentDate").value = formatDateLong(today);
+              // Recalculate Next Due Date.
+              calculateNextDueDate();
+            }
+          });
+          
+          // Trigger change event on initial load if options exist.
+          if (unitDropdown.options.length > 0) {
+            unitDropdown.value = unitDropdown.options[0].value;
+            unitDropdown.dispatchEvent(new Event("change"));
+          }
+        } catch (e) {
+          console.error("Error parsing tenants data:", e);
+        }
+      }).getAllTenants();
+    }
+
+    // Function to open the Rent Payment Modal with pre-populated data from a tenant row
+    function openRentPaymentModalFor(tenant) {
+      // Pre-populate Unit Number and Tenant Name.
+      document.getElementById("rentUnitNumber").value = tenant["Unit Number"] || "";
+      document.getElementById("rentTenantName").value = tenant["Tenant Name"] || "";
+      
+      // Pre-populate Frequency and Amount.
+      document.getElementById("rentFrequency").value = tenant["Payment Frequency"] || "Monthly";
+      document.getElementById("rentAmount").value = tenant["Lease Amount"] || "";
+      
+      // Default Payment Date to today's date.
+      var today = new Date();
+      document.getElementById("rentPaymentDate").value = formatDateLong(today);
+      
+      // Recalculate Next Due Date.
+      calculateNextDueDate();
+      
+      // Clear previous notes and file input.
+      document.getElementById("rentNotes").value = "";
+      document.getElementById("rentReceiptFile").value = "";
+      
+      // Open the Rent Payment modal.
+      var modalElement = document.getElementById("rentPaymentModal");
+      var modal = new bootstrap.Modal(modalElement);
+      modal.show();
+    }
+    document.getElementById("rentUnitNumber").addEventListener("change", function() {
+      const selectedUnit = this.value;
+      google.script.run.withSuccessHandler(function(tenant) {
+          if (tenant) {
+              document.getElementById("rentTenantName").value = tenant.tenantName;
+              document.getElementById("rentFrequency").value = tenant.paymentFrequency;
+              document.getElementById("rentAmount").value = tenant.leaseAmount;
+          } else {
+              document.getElementById("rentTenantName").value = "";
+              alert("No current tenant found for the selected unit.");
+          }
+      }).getTenantDetails(selectedUnit);
+    });
+
+
+
+    // Toggle function to show/hide the Tenants Table container
+    function toggleTenantsContainer() {
+      const container = document.getElementById("tenantsContainer");
+      const toggleBtn = document.getElementById("toggleTableBtn");
+      if (container.style.display === "none" || container.style.display === "") {
+        container.style.display = "block";
+        toggleBtn.textContent = "Hide Tenants Table";
+      } else {
+        container.style.display = "none";
+        toggleBtn.textContent = "Show Tenants Table";
+      }
+    }
+    // Displays a page of tenant records with pagination and adds action buttons
+    function displayPage(page) {
+      const tableBody = document.getElementById("tenantsTableBody");
+      tableBody.innerHTML = "";
+      const startIndex = (page - 1) * rowsPerPage;
+      const endIndex = Math.min(startIndex + rowsPerPage, tenantsData.length);
+      const pageData = tenantsData.slice(startIndex, endIndex);
+      if (!pageData.length) {
+        tableBody.innerHTML = "<tr><td colspan='11'>No tenants found</td></tr>";
+        return;
+      }
+      pageData.forEach(function(tenant) {
+        const tr = document.createElement("tr");
+        const headers = [
+          "Unit Number", 
+          "Tenant Name", 
+          "Phone Number", 
+          "Email Address",
+          "Lease Start Date", 
+          "Lease End Date", 
+          "Security Deposit Amount", 
+          "Status", 
+          "Lease Amount",
+          "Payment Frequency"
+        ];
+        headers.forEach(function(header) {
+          const td = document.createElement("td");
+          let value = tenant[header] !== undefined ? tenant[header] : "N/A";
+          if (header === "Lease Amount" || header === "Security Deposit Amount") {
+            value = formatCurrency(value);
+          }
+          if (header === "Lease Start Date" || header === "Lease End Date") {
+            value = formatDateDisplay(value);
+          }
+          td.textContent = value;
+          tr.appendChild(td);
+        });
+        // Action cell: "Mark as Left" and "Record Payment" buttons.
+        // Action cell: Only display buttons if tenant is "Current Tenant"
+        const actionTd = document.createElement("td");
+        if (tenant["Status"] === "Current Tenant") {
+          // "Mark as Left" button
+          const leaveButton = document.createElement("button");
+          leaveButton.textContent = "Mark as Left";
+          leaveButton.className = "btn btn-danger btn-sm me-1";
+          leaveButton.onclick = function () {
+            google.script.run.withSuccessHandler(function(response) {
+              alert(response.message);
+              if(response.success) {
+                refreshData();
+              }
+            }).markTenantAsLeft(tenant["Email Address"], tenant["Unit Number"]);
+          };
+          actionTd.appendChild(leaveButton);
+
+          // "Record Payment" button
+          const paymentButton = document.createElement("button");
+          paymentButton.textContent = "Record Payment";
+          paymentButton.className = "btn btn-primary btn-sm";
+          paymentButton.onclick = function () {
+            //openRentPaymentModalFor(tenant);
+            openRecordRentPaymentModal(tenant);
+          };
+          actionTd.appendChild(paymentButton);
+        } else {
+          // Optionally, you can display a label or leave empty if not current.
+          actionTd.textContent = "";
+        }
+        tr.appendChild(actionTd);
+
+        tableBody.appendChild(tr);
+      });
+      updatePaginationControls();
+    }
+function openRecordRentPaymentModal(tenant) {
+    google.script.run.withSuccessHandler(function(nextID) {
+        document.getElementById("recordRentPaymentID").value = nextID;
+        document.getElementById("recordRentUnitNumber").value = tenant["Unit Number"];
+        document.getElementById("recordRentTenantName").value = tenant["Tenant Name"];
+        document.getElementById("recordRentFrequency").value = tenant["Payment Frequency"];
+        document.getElementById("recordRentAmount").value = tenant["Lease Amount"];
+        
+        var today = new Date();
+        document.getElementById("recordRentPaymentDate").value = today.toISOString().split("T")[0];
+        
+        calculateNextDueDateForRecordModal();
+
+        new bootstrap.Modal(document.getElementById("recordRentPaymentModal")).show();
+    }).getNextRentPaymentID();
+}
+
+    // Calculate Next Due Date based on frequency
+    function calculateNextDueDateForRecordModal() {
+        var paymentDateStr = document.getElementById("recordRentPaymentDate").value;
+        var frequency = document.getElementById("recordRentFrequency").value;
+        if (!paymentDateStr) {
+            document.getElementById("recordRentNextDueDate").value = "";
+            return;
+        }
+
+        var paymentDate = new Date(paymentDateStr);
+        var monthsToAdd = {
+            "Monthly": 1,
+            "Every 2 Months": 2,
+            "Every 3 Months": 3,
+            "Every 4 Months": 4,
+            "Every 6 Months": 6,
+            "Yearly": 12
+        }[frequency] || 1;
+
+        var nextDueDate = new Date(paymentDate);
+        nextDueDate.setMonth(paymentDate.getMonth() + monthsToAdd);
+        document.getElementById("recordRentNextDueDate").value = formatDate(nextDueDate);
+    }
+
+    // Formats a date string for display (for Tenants table) as "Oct 02, 2024"
+    function formatDate(dateValue) {
+      if (!dateValue || dateValue === "N/A") return "N/A";
+      const dateObj = new Date(dateValue);
+      if (isNaN(dateObj.getTime())) return "Invalid Date";
+      return dateObj.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    }
+    // Formats a number as currency (ETB)
+    function formatCurrency(amount) {
+      if (isNaN(amount) || amount === "" || amount === "N/A") return "N/A";
+      const formattedNumber = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+      return `ETB ${formattedNumber}`;
+    }
+    // Handles pagination page changes
+    function changePage(direction) {
+      const totalPages = Math.ceil(tenantsData.length / rowsPerPage);
+      const newPage = currentPage + direction;
+      if (newPage < 1 || newPage > totalPages) return;
+      currentPage = newPage;
+      displayPage(currentPage);
+    }
+    // Updates pagination buttons and page indicator
+    function updatePaginationControls() {
+      const totalPages = Math.ceil(tenantsData.length / rowsPerPage);
+      document.getElementById("prevPageBtn").disabled = (currentPage === 1);
+      document.getElementById("nextPageBtn").disabled = (currentPage >= totalPages);
+      document.getElementById("pageIndicator").innerText = `Page ${currentPage} of ${totalPages}`;
+    }
+    let sortOrders = {
+      tenants: { column: "", direction: 1 },
+      endedLease: { column: "", direction: 1 },
+      rentPayments: { column: "", direction: 1 },
+      maintenance: { column: "", direction: 1 },
+      buildingMaintenance: { column: "", direction: 1 } // 🔹 Added sorting for Building Maintenance
+    };
+
+    function sortTable(tableType, columnName) {
+      let data, displayFunction, page, rowsPerPage;
+
+      // Identify the relevant dataset and display function
+      if (tableType === "tenants") {
+          data = tenantsData;
+          displayFunction = displayPage;
+          page = currentPage;
+          rowsPerPage = rowsPerPage;
+      } else if (tableType === "endedLease") {
+          data = endedLeaseData;
+          displayFunction = displayEndedLeaseTenantsPage;
+          page = currentEndedLeasePage;
+          rowsPerPage = endedLeaseRowsPerPage;
+      } else if (tableType === "rentPayments") {
+          data = rentPaymentsData;
+          displayFunction = displayRentPaymentsPage;
+          page = currentRentPage;
+          rowsPerPage = rentRowsPerPage;
+      } else if (tableType === "maintenance") {
+          data = maintenanceData;
+          displayFunction = displayMaintenancePage;
+          page = currentMaintenancePage;
+          rowsPerPage = maintenanceRowsPerPage;
+      } else if (tableType === "buildingMaintenance") {
+          data = buildingMaintenanceData;
+          displayFunction = displayBuildingMaintenancePage;
+          page = currentBuildingMaintenancePage;
+          rowsPerPage = buildingMaintenanceRowsPerPage;
+      } else if (tableType === "rentDue") {
+          data = rentDueData;
+          displayFunction = displayRentDuePage;
+          page = rentDueCurrentPage;
+          rowsPerPage = rentDueRowsPerPage;
+      } else {
+          return; // Exit if tableType is not recognized
+      }
+
+      if (!data || data.length === 0) return;
+
+      let order = sortOrders[tableType] || { column: "", direction: 1 };
+
+      // Toggle sorting direction if the same column is clicked again
+      if (order.column === columnName) {
+          order.direction *= -1;
+      } else {
+          order.column = columnName;
+          order.direction = 1;
+      }
+      sortOrders[tableType] = order; // Save the new sorting order
+
+      // Sort data
+      data.sort((a, b) => {
+          let aVal = a[columnName] || "";
+          let bVal = b[columnName] || "";
+
+          // Handle numeric sorting for "Security Deposit Amount" and "Lease Amount"
+              if (["Security Deposit Amount", "Lease Amount", "Expense Amount"].includes(columnName)) {
+                let aNum = parseFloat(aVal) || 0;
+                let bNum = parseFloat(bVal) || 0;
+                return order.direction * (aNum - bNum);
+              }
+
+          // 🔹 Handle Date Sorting
+          if (["Due Date", "Date Completed", "Next Rent Date", "Payment Date"].includes(columnName)) {
+              let aDate = new Date(aVal);
+              let bDate = new Date(bVal);
+              if (!isNaN(aDate) && !isNaN(bDate)) return order.direction * (aDate - bDate);
+              return order.direction * (new Date(aVal) - new Date(bVal)); // Fallback for invalid dates
+          }
+
+          // 🔹 Handle Numeric Sorting
+          if (["Expense Amount", "Amount Due", "Amount"].includes(columnName)) {
+              let aNum = parseFloat(aVal);
+              let bNum = parseFloat(bVal);
+              if (!isNaN(aNum) && !isNaN(bNum)) return order.direction * (aNum - bNum);
+          }
+
+          // 🔹 Default: String sorting
+          return order.direction * aVal.toString().localeCompare(bVal.toString());
+      });
+
+      // Refresh table with sorted data
+      displayFunction(page);
+
+      // 🔹 Update sorting icons for this table
+      updateSortIcons(tableType);
+  }
+
+    function loadMaintenanceRequests() {
+      google.script.run.withSuccessHandler(function(responseString) {
+        //console.log("Raw Maintenance Requests Response:", responseString); //Debugging
+
+        if (!responseString) {
+          console.error("Error: Null or undefined response received.");
+          alert("Error loading maintenance data. Please try again.");
+          return;
+        }
+
+        try {
+          var response = JSON.parse(responseString);
+
+          if (!response || !response.success) {
+            console.error("Error in response:", response.message);
+            alert(response.message || "Failed to load maintenance data.");
+            return;
+          }
+
+          maintenanceData = response.requests;
+
+          if (maintenanceData.length === 0) {
+            document.getElementById("maintenanceTableBody").innerHTML = "<tr><td colspan='9'>No maintenance requests found</td></tr>";
+            return;
+          }
+
+          currentMaintenancePage = 1;
+          displayMaintenancePage(currentMaintenancePage);
+
+        } catch (e) {
+          console.error("Error parsing maintenance data:", e);
+          alert("Error processing maintenance data. Please check the console for details.");
+        }
+      }).getMaintenanceRequests();
+    }
+
+    function displayMaintenancePage(page) {
+      const tbody = document.getElementById("maintenanceTableBody");
+      tbody.innerHTML = "";
+
+      const startIndex = (page - 1) * maintenanceRowsPerPage;
+      const endIndex = Math.min(startIndex + maintenanceRowsPerPage, maintenanceData.length);
+      const pageData = maintenanceData.slice(startIndex, endIndex);
+
+      if (!pageData.length) {
+        tbody.innerHTML = "<tr><td colspan='9'>No maintenance requests found</td></tr>";
+        return;
+      }
+
+      pageData.forEach(request => {
+        var tr = document.createElement("tr");
+
+        var columns = [
+          "Request ID",
+          "Unit Number",
+          "Tenant Name",
+          "Issue Description",
+          "Date Submitted",
+          "Status",
+          "Date Resolved",
+          "Days to Complete",
+          "Notes"
+        ];
+
+        columns.forEach(col => {
+          var td = document.createElement("td");
+          var value = request[col] || "N/A";
+          // Apply correct date formatting
+          if (col === "Date Submitted" || col === "Date Resolved") {
+            value = formatDateDisplay(value);
+          }
+
+          td.textContent = value;
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+
+      addActionButtons("maintenance", "maintenanceTableBody", pageData);
+      updateMaintenancePaginationControls();
+      //console.log("Raw Maintenance Data:", maintenanceData);
+
+    }
+    function changeMaintenancePage(direction) {
+      const totalPages = Math.ceil(maintenanceData.length / maintenanceRowsPerPage);
+      const newPage = currentMaintenancePage + direction;
+
+      if (newPage < 1 || newPage > totalPages) return;
+
+      currentMaintenancePage = newPage;
+      displayMaintenancePage(currentMaintenancePage);
+    }
+
+    function updateMaintenancePaginationControls() {
+      const totalPages = Math.ceil(maintenanceData.length / maintenanceRowsPerPage);
+      document.getElementById("prevMaintenancePageBtn").disabled = (currentMaintenancePage === 1);
+      document.getElementById("nextMaintenancePageBtn").disabled = (currentMaintenancePage >= totalPages);
+      document.getElementById("maintenancePageIndicator").innerText = `Page ${currentMaintenancePage} of ${totalPages}`;
+    }
+
+  // Updates sorting icons in table headers
+  function updateSortIcons(tableType) {
+      const tableIdMap = {
+          tenants: "tenantsTable",
+          endedLease: "endedLeaseTable",
+          rentPayments: "rentPaymentsTable",
+          maintenance: "maintenanceTable",
+          buildingMaintenance: "buildingMaintenanceTable",
+          rentDue: "rentDueTable"
+      };
+
+      let tableId = tableIdMap[tableType];
+      if (!tableId) return;
+
+      const headerCells = document.querySelectorAll(`#${tableId} th`);
+      headerCells.forEach(th => {
+          const headerText = th.textContent.replace(/[\u25B2\u25BC]/g, "").trim();
+          if (headerText === sortOrders[tableType].column) {
+              th.innerHTML = `${headerText} ${sortOrders[tableType].direction === 1 ? "▲" : "▼"}`;
+          } else {
+              th.innerHTML = headerText;
+          }
+      });
+  }
+    // Adds click events to header cells for sorting.
+    function addSortingToHeaders() {
+      const headerCells = document.querySelectorAll("#tenantsTableHead th");
+      headerCells.forEach(function(th) {
+        th.style.cursor = "pointer";
+        th.addEventListener("click", function() {
+          const headerText = th.textContent.replace(/[\u25B2\u25BC]/g, "").trim();
+          sortTenantsBy(headerText);
+        });
+      });
+    }
+    // Helper function to format a Date object as "October, 2, 2024"
+    function formatDateLong(date) {
+      var options = { month: 'long', day: 'numeric', year: 'numeric' };
+      var formatted = date.toLocaleDateString('en-US', options);
+      // Ensure there is a comma after the month name.
+      formatted = formatted.replace(/^(\w+)\s/, "$1, ");
+      return formatted;
+    }
+    //Function to Calculate Days Between Two Dates
+    function calculateDaysToComplete() {
+      const submittedDate = document.getElementById("editDateSubmitted").value;
+      const resolvedDate = document.getElementById("editDateResolved").value;
+      const daysToCompleteField = document.getElementById("editDaysToComplete");
+
+      if (submittedDate && resolvedDate) {
+        const startDate = new Date(submittedDate);
+        const endDate = new Date(resolvedDate);
+
+        if (!isNaN(startDate) && !isNaN(endDate) && endDate >= startDate) {
+          const timeDiff = endDate - startDate;
+          const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // Convert to days
+          daysToCompleteField.value = daysDiff; //Set a valid number
+        } else {
+          daysToCompleteField.value = ""; //Leave blank if invalid date
+        }
+      } else {
+        daysToCompleteField.value = ""; //Ensure it's empty if dates are missing
+      }
+    }
+
+
+    // Calculates Next Due Date based on Payment Date and Frequency
+    function calculateNextDueDate() {
+      var paymentDateStr = document.getElementById("rentPaymentDate").value;
+      var frequency = document.getElementById("rentFrequency").value;
+      if (!paymentDateStr) {
+        document.getElementById("rentNextDueDate").value = "";
+        return;
+      }
+      var paymentDate = new Date(paymentDateStr);
+      if (isNaN(paymentDate)) {
+        document.getElementById("rentNextDueDate").value = "";
+        return;
+      }
+      var monthsToAdd = 1;
+      if (frequency === "Monthly") {
+        monthsToAdd = 1;
+      } else if (frequency === "Every 2 Months") {
+        monthsToAdd = 2;
+      } else if (frequency === "Every 3 Months") {
+        monthsToAdd = 3;
+      } else if (frequency === "Every 4 Months") {
+        monthsToAdd = 4;
+      } else if (frequency === "Every 6 Months") {
+        monthsToAdd = 6;
+      } else if (frequency === "Yearly") {
+        monthsToAdd = 12;
+      }
+      var nextDueDate = addMonths(paymentDate, monthsToAdd);
+      var formattedDate = formatDateLong(nextDueDate);
+      document.getElementById("rentNextDueDate").value = formattedDate;
+    }
+
+    // Helper function to add months to a date
+    function addMonths(date, months) {
+        let newDate = new Date(date);
+        newDate.setMonth(newDate.getMonth() + months);
+
+        // Fix end-of-month issues (e.g., Feb 28 → April 30 instead of April 28)
+        if (newDate.getDate() !== date.getDate()) {
+            newDate.setDate(0); // Set to last day of previous month
+        }
+        return newDate;
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("submitRentPaymentFormBtn").addEventListener("click", submitRentPaymentForm);
+    });
+    // Function to handle Rent Payment form submission
+    function submitRentPaymentForm() {
+        var tenantData = {
+            unitNumber: document.getElementById("rentUnitNumber").value,
+            tenantName: document.getElementById("rentTenantName").value,
+            frequency: document.getElementById("rentFrequency").value,
+            firstPaymentDate: document.getElementById("rentPaymentDate").value,
+            amount: document.getElementById("rentAmount").value,
+            nextDueDate: document.getElementById("rentNextDueDate").value,
+            status: document.getElementById("rentStatus").value,
+            notes: document.getElementById("rentNotes").value
+        };
+
+        var fileInput = document.getElementById("rentReceiptFile");
+        if (fileInput.files.length > 0) {
+            var file = fileInput.files[0];
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var fileData = e.target.result;
+                google.script.run.withSuccessHandler(function (response) {
+                    alert(response.message);
+                    if (response.success) {
+                        document.getElementById("rentPaymentForm").reset();
+                        var modal = bootstrap.Modal.getInstance(document.getElementById("rentPaymentModal"));
+                        modal.hide();
+                    }
+                }).recordRentPayment(tenantData, fileData, file.name, file.type);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            google.script.run.withSuccessHandler(function (response) {
+                alert(response.message);
+                if (response.success) {
+                    document.getElementById("rentPaymentForm").reset();
+                    var modal = bootstrap.Modal.getInstance(document.getElementById("rentPaymentModal"));
+                    modal.hide();
+                }
+            }).recordRentPayment(tenantData, null, null, null);
+        }
+    }
+
+
+    // Function to load aggregated rent payments data
+    function loadAggregatedPayments() {
+      google.script.run.withSuccessHandler(function(responseString) {
+        try {
+          var response = JSON.parse(responseString);
+          if (!response.success) {
+            alert(response.message);
+            return;
+          }
+          var aggData = response.aggregated;
+          var tbody = document.getElementById("aggTableBody");
+          tbody.innerHTML = "";
+          if (aggData.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='5'>No data found</td></tr>";
+            return;
+          }
+          aggData.forEach(function(row) {
+            var tr = document.createElement("tr");
+            var tdUnit = document.createElement("td");
+            tdUnit.textContent = row.unit;
+            tr.appendChild(tdUnit);
+            var tdTotal = document.createElement("td");
+            tdTotal.textContent = parseFloat(row.totalPaid).toFixed(2);
+            tr.appendChild(tdTotal);
+            var tdCount = document.createElement("td");
+            tdCount.textContent = row.count;
+            tr.appendChild(tdCount);
+            var tdLast = document.createElement("td");
+            var d = new Date(row.lastPayment);
+            if (!isNaN(d.getTime())) {
+              tdLast.textContent = d.toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' });
+            } else {
+              tdLast.textContent = row.lastPayment;
+            }
+            tr.appendChild(tdLast);
+            var tdMonths = document.createElement("td");
+            tdMonths.textContent = row.paidMonths || "";
+            tr.appendChild(tdMonths);
+            tbody.appendChild(tr);
+          });
+        } catch (e) {
+          console.error("Error parsing aggregated data:", e);
+        }
+      }).getAggregatedRentPayments();
+    }
+    // Refresh function to reload dashboard and tenant data
+    function refreshData() {
+      loadDashboard();
+      loadTenants();
+    }
+    // Sorts tenantsData by specified column.
+    function sortTenantsBy(columnName, toggle = true) {
+      if (toggle) {
+        if (sortColumn === columnName) {
+          sortDirection = -sortDirection;
+        } else {
+          sortColumn = columnName;
+          sortDirection = 1;
+        }
+      } else {
+        sortColumn = columnName;
+      }
+      tenantsData.sort(function(a, b) {
+        let aVal = a[columnName] || "";
+        let bVal = b[columnName] || "";
+        const aNum = parseFloat(aVal);
+        const bNum = parseFloat(bVal);
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+          return sortDirection * (aNum - bNum);
+        }
+        const aDate = new Date(aVal);
+        const bDate = new Date(bVal);
+        if (!isNaN(aDate.getTime()) && !isNaN(bDate.getTime())) {
+          return sortDirection * (aDate - bDate);
+        }
+        return sortDirection * aVal.toString().localeCompare(bVal.toString());
+      });
+      displayPage(currentPage);
+      updateSortIcons();
+    }
+    function updateSortIcons(tableType) {
+      let tableId = "";
+      let order = sortOrders[tableType];
+
+      if (tableType === "tenants") {
+        tableId = "tenantsTable";
+      } else if (tableType === "endedLease") {
+        tableId = "endedLeaseTable";
+      } else if (tableType === "rentPayments") {
+        tableId = "rentPaymentsTable";
+      } else if (tableType === "maintenance") {
+        tableId = "maintenanceTable";
+      } else if (tableType === "buildingMaintenance") {
+        tableId = "buildingMaintenanceTable"; 
+      }
+
+      if (!tableId) return;
+
+      const headerCells = document.querySelectorAll(`#${tableId} th`);
+      headerCells.forEach(th => {
+        const headerText = th.textContent.replace(/[\u25B2\u25BC]/g, "").trim();
+        if (headerText === order.column) {
+          th.innerHTML = `${headerText} ${order.direction === 1 ? "▲" : "▼"}`;
+        } else {
+          th.innerHTML = headerText;
+        }
+      });
+    }
+
+    function addSortingToHeaders() {
+      const headerCells = document.querySelectorAll("#tenantsTableHead th");
+      headerCells.forEach(function(th) {
+        th.style.cursor = "pointer";
+        th.addEventListener("click", function() {
+          const headerText = th.textContent.replace(/[\u25B2\u25BC]/g, "").trim();
+          sortTenantsBy(headerText);
+        });
+      });
+    }
+  
+  // Function to open the Maintenance Request modal
+  function openMaintenanceModal() {
+    // Get a new Request ID from the server.
+    google.script.run.withSuccessHandler(function(newID) {
+      document.getElementById("requestID").value = newID;
+    }).getNewRequestID();
+    
+    // Set Date Submitted to today's date.
+    var today = new Date();
+    document.getElementById("dateSubmitted").value = formatDateLong(today);
+    
+    // Load Unit Number and Tenant Name options from Tenants tab.
+    google.script.run.withSuccessHandler(function(responseString) {
+      try {
+        var response = JSON.parse(responseString);
+        if (!response.success) {
+          alert(response.message);
+          return;
+        }
+        var tenants = response.tenants;
+        // Filter to include only current tenants.
+        var currentTenants = tenants.filter(function(tenant) {
+          return String(tenant["Status"]).trim() === "Current Tenant";
+        });
+        var unitDropdown = document.getElementById("maintenanceUnitNumber");
+        var tenantNameInput = document.getElementById("maintenanceTenantName");
+        unitDropdown.innerHTML = "";
+        
+        // Populate Unit Number dropdown.
+        currentTenants.forEach(function(tenant) {
+          var option = document.createElement("option");
+          option.value = tenant["Unit Number"];
+          option.textContent = tenant["Unit Number"];
+          unitDropdown.appendChild(option);
+        });
+        
+        // When the unit is selected, auto-populate the Tenant Name.
+        unitDropdown.addEventListener("change", function() {
+          var selectedUnit = unitDropdown.value;
+          var tenantRecord = currentTenants.find(function(t) {
+            return String(t["Unit Number"]).trim() === String(selectedUnit).trim();
+          });
+          if (tenantRecord) {
+            tenantNameInput.value = tenantRecord["Tenant Name"] || "";
+          } else {
+            tenantNameInput.value = "";
+          }
+        });
+        
+        // Trigger change on initial load if options exist.
+        if (unitDropdown.options.length > 0) {
+          unitDropdown.value = unitDropdown.options[0].value;
+          unitDropdown.dispatchEvent(new Event("change"));
+        }
+      } catch (e) {
+        console.error("Error parsing tenants data for maintenance modal:", e);
+      }
+    }).getAllTenants();
+    
+    // Open the Maintenance Request modal.
+    var modalElement = document.getElementById("maintenanceModal");
+    var modal = new bootstrap.Modal(modalElement);
+    modal.show();
+  }
+
+  // Function to submit the Maintenance Request form
+  function submitMaintenanceForm() {
+    var data = {
+      unitNumber: document.getElementById("maintenanceUnitNumber").value,
+      tenantName: document.getElementById("maintenanceTenantName").value,
+      issueDescription: document.getElementById("issueDescription").value
+      // Date Submitted and Request ID are auto-handled on the server side.
+    };
+    google.script.run.withSuccessHandler(function(response) {
+      alert(response.message);
+      if(response.success) {
+        document.getElementById("maintenanceForm").reset();
+        var modal = bootstrap.Modal.getInstance(document.getElementById("maintenanceModal"));
+        modal.hide();
+        refreshData();
+      }
+    }).recordMaintenanceRequest(data);
+  }
+  function loadBuildingMaintenanceRecords() {
+    google.script.run.withSuccessHandler(function(responseString) {
+      try {
+        var response = JSON.parse(responseString);
+        if (!response.success) {
+          alert(response.message);
+          return;
+        }
+
+        buildingMaintenanceData = response.maintenanceRecords;
+
+        if (buildingMaintenanceData.length === 0) {
+          document.getElementById("buildingMaintenanceTableBody").innerHTML = "<tr><td colspan='7'>No building maintenance records found</td></tr>";
+          return;
+        }
+
+        currentBuildingMaintenancePage = 1;
+        displayBuildingMaintenancePage(currentBuildingMaintenancePage);
+
+      } catch (e) {
+        console.error("Error parsing building maintenance data:", e);
+      }
+    }).getBuildingMaintenanceRecords();
+  }
+    // Function to display building maintenance page
+    function displayBuildingMaintenancePage(page) {
+        const tbody = document.getElementById("buildingMaintenanceTableBody");
+        tbody.innerHTML = ""; // Clear existing rows
+
+        // Calculate pagination indices
+        const startIndex = (page - 1) * buildingMaintenanceRowsPerPage;
+        const endIndex = Math.min(startIndex + buildingMaintenanceRowsPerPage, buildingMaintenanceData.length);
+        const pageData = buildingMaintenanceData.slice(startIndex, endIndex);
+
+        // Handle case where no data is available for the current page
+        if (!pageData.length) {
+            tbody.innerHTML = "<tr><td colspan='7'>No building maintenance records found</td></tr>";
+            return;
+        }
+
+        // Populate table rows with formatted data
+        pageData.forEach(record => {
+            const tr = document.createElement("tr"); // Create a new table row
+            const columns = [
+                "Maintenance REQ ID",
+                "Task Name",
+                "Due Date",
+                "Completion Status",
+                "Expense Amount",
+                "Date Completed",
+                "Notes"
+            ];
+
+            columns.forEach(col => {
+                const td = document.createElement("td"); // Create a new table cell
+                let value = record[col] || "N/A"; // Default to "N/A" if value is missing
+
+                // Format date columns
+                if (col === "Due Date" || col === "Date Completed") {
+                    value = formatDateDisplay(value);
+                }
+
+                td.textContent = value; // Set the cell content
+                tr.appendChild(td); // Append the cell to the row
+            });
+
+            tbody.appendChild(tr); // Append the row to the table body
+        });
+
+        // Add action buttons and update pagination controls
+        addActionButtons("buildingMaintenance", "buildingMaintenanceTableBody", pageData);
+        updateBuildingMaintenancePaginationControls();
+  }
+
+  function formatDateForInput(dateString) {
+    if (!dateString || dateString === "N/A") return ""; // Handle empty values
+
+    let dateObj = new Date(dateString);
+    if (isNaN(dateObj.getTime())) return ""; // If invalid date, return empty string
+
+    return dateObj.toISOString().split("T")[0]; // Convert to "YYYY-MM-DD" for input fields
+  }
+
+  function changeBuildingMaintenancePage(direction) {
+    const totalPages = Math.ceil(buildingMaintenanceData.length / buildingMaintenanceRowsPerPage);
+    const newPage = currentBuildingMaintenancePage + direction;
+
+    if (newPage < 1 || newPage > totalPages) return;
+
+    currentBuildingMaintenancePage = newPage;
+    displayBuildingMaintenancePage(currentBuildingMaintenancePage);
+  }
+
+  function updateBuildingMaintenancePaginationControls() {
+    const totalPages = Math.ceil(buildingMaintenanceData.length / buildingMaintenanceRowsPerPage);
+    document.getElementById("prevBuildingMaintenancePageBtn").disabled = (currentBuildingMaintenancePage === 1);
+    document.getElementById("nextBuildingMaintenancePageBtn").disabled = (currentBuildingMaintenancePage >= totalPages);
+    document.getElementById("buildingMaintenancePageIndicator").innerText = `Page ${currentBuildingMaintenancePage} of ${totalPages}`;
+  }
+  function addActionButtons(tableType, tbodyId, data) {
+    const tbody = document.getElementById(tbodyId);
+    tbody.innerHTML = "";
+
+    data.forEach((record, index) => {
+      const tr = document.createElement("tr");
+
+      // Add all data columns
+      for (const key in record) {
+        const td = document.createElement("td");
+        td.textContent = record[key] || "N/A";
+        tr.appendChild(td);
+      }
+
+      // Create action buttons
+      const actionTd = document.createElement("td");
+      
+      // Edit Button
+      const editBtn = document.createElement("button");
+      editBtn.className = "btn btn-primary btn-sm me-1";
+      editBtn.innerHTML = "Edit";
+      editBtn.onclick = function () {
+        openEditModal(tableType, index);
+      };
+
+      // Delete Button
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "btn btn-danger btn-sm";
+      deleteBtn.innerHTML = "Delete";
+      deleteBtn.onclick = function () {
+        confirmDelete(tableType, index);
+      };
+
+      actionTd.appendChild(editBtn);
+      actionTd.appendChild(deleteBtn);
+      tr.appendChild(actionTd);
+
+      tbody.appendChild(tr);
+    });
+  }
+  function openEditModal(tableType, index) {
+    let data;
+
+    if (tableType === "rentPayments") {
+      data = rentPaymentsData[index];
+      document.getElementById("editRentIndex").value = index;
+      document.getElementById("editRentUnitNumber").value = data["Unit Number"];
+      document.getElementById("editRentTenantName").value = data["Tenant Name"];
+      document.getElementById("editRentFrequency").value = data["Frequency"];
+      document.getElementById("editRentPaymentDate").value = formatDateForInput(data["Payment Date"]);
+      document.getElementById("editRentAmount").value = data["Amount"];
+      document.getElementById("editRentNextDueDate").value = formatDateForInput(data["Next Due Date"]);
+      document.getElementById("editRentStatus").value = data["Status"];
+      document.getElementById("editRentNotes").value = data["Notes"];
+
+      // Handle Payment Receipt URL
+      let receiptLink = document.getElementById("editRentCurrentReceiptLink");
+      if (receiptLink) {
+        if (data["Payment URL Link"]) {
+          receiptLink.href = data["Payment URL Link"];
+          receiptLink.textContent = "View Current Receipt";
+        } else {
+          receiptLink.href = "#";
+          receiptLink.textContent = "No Receipt Available";
+        }
+      }
+
+      new bootstrap.Modal(document.getElementById("editRentPaymentsModal")).show();
+      }
+      else if (tableType === "maintenance") {
+        data = maintenanceData[index];
+
+        document.getElementById("editMaintenanceIndex").value = index;
+        document.getElementById("editRequestID").value = data["Request ID"]; //Correct Column
+        document.getElementById("editUnitNumber").value = data["Unit Number"]; //Correct Column
+        document.getElementById("editTenantName").value = data["Tenant Name"]; //Correct Column
+        document.getElementById("editIssueDescription").value = data["Issue Description"]; //Correct Column
+        document.getElementById("editDateSubmitted").value = formatDateForInput(data["Date Submitted"]);
+        document.getElementById("editDateResolved").value = formatDateForInput(data["Date Resolved"]);
+        document.getElementById("editMaintenanceStatus").value = data["Status"]; //Correct Column
+        
+        document.getElementById("editMaintenanceNotes").value = data["Notes"]; //Correct Column
+        calculateDaysToComplete();  //Auto-calculate "Days to Complete"
+
+        new bootstrap.Modal(document.getElementById("editMaintenanceModal")).show();
+      } 
+      
+      else if (tableType === "buildingMaintenance") {
+        data = buildingMaintenanceData[index];
+
+        document.getElementById("editBuildingIndex").value = index;
+        document.getElementById("editBuildingReqID").value = data["Maintenance REQ ID"];
+        document.getElementById("editBuildingTaskName").value = data["Task Name"];
+        document.getElementById("editBuildingDueDate").value = formatDateForInput(data["Due Date"]);
+        document.getElementById("editBuildingStatus").value = data["Completion Status"];
+        document.getElementById("editBuildingExpense").value = data["Expense Amount"];
+        document.getElementById("editBuildingDateCompleted").value = formatDateForInput(data["Date Completed"]);
+        document.getElementById("editBuildingNotes").value = data["Notes"];
+
+        new bootstrap.Modal(document.getElementById("editBuildingMaintenanceModal")).show();
+      }
+  }
+  function formatDateForInput(dateString) {
+    if (!dateString || dateString === "N/A") return ""; // Handle empty values
+
+    let dateObj = new Date(dateString);
+    if (isNaN(dateObj.getTime())) return ""; // If invalid date, return empty string
+
+    return dateObj.toISOString().split("T")[0]; // Convert to "YYYY-MM-DD" for input fields
+  }
+  function confirmDelete(tableType, index) {
+    if (confirm("Are you sure you want to delete this record? This action cannot be undone.")) {
+      deleteRecord(tableType, index);
+    }
+  }
+  function deleteRecord(tableType, index) { 
+      let data, deleteFunction;
+
+      if (tableType === "rentPayments") {
+        data = rentPaymentsData[index]; // Make sure this object contains "Rent Payment ID"
+        deleteFunction = "deleteRentPayment";
+      } 
+      else if (tableType === "maintenance") {
+        data = maintenanceData[index];
+        deleteFunction = "deleteMaintenanceRequest";
+      } 
+      else if (tableType === "buildingMaintenance") {
+        data = buildingMaintenanceData[index];
+        deleteFunction = "deleteBuildingMaintenance";
+      }
+
+      if (!data || !data["Rent Payment ID"]) {  // Ensure Rent Payment ID is present
+        alert("Error: Rent Payment ID not found.");
+        return;
+      }
+
+      google.script.run.withSuccessHandler(function(response) {
+        alert(response.message);
+        if (response.success) {
+          refreshData(); // Reload the data after deletion
+        }
+      })[deleteFunction](data);
+  }
+
+
+  function saveRentPaymentEdit() {
+      let updatedData = {
+          "Rent Payment ID": document.getElementById("editRentPaymentID").value, //Ensure Rent Payment ID is included
+          "Unit Number": document.getElementById("editRentUnitNumber").value,
+          "Tenant Name": document.getElementById("editRentTenantName").value,
+          "Frequency": document.getElementById("editRentFrequency").value,
+          "Payment Date": document.getElementById("editRentPaymentDate").value,
+          "Amount": document.getElementById("editRentAmount").value,
+          "Next Due Date": document.getElementById("editRentNextDueDate").value,
+          "Status": document.getElementById("editRentStatus").value,
+          "Notes": document.getElementById("editRentNotes").value,
+          "Payment URL Link": document.getElementById("editRentCurrentReceiptLink").href || "" // Keep old URL if no new file is uploaded
+      };
+
+      let fileInput = document.getElementById("editRentReceiptFile");
+      if (fileInput.files.length > 0) {
+          let file = fileInput.files[0];
+          let reader = new FileReader();
+
+          reader.onload = function (e) {
+              let fileData = e.target.result;
+              google.script.run.withSuccessHandler(function (response) {
+                  alert(response.message);
+                  if (response.success) {
+                      bootstrap.Modal.getInstance(document.getElementById("editRentPaymentsModal")).hide();
+                      refreshData();
+                  }
+              }).updateRentPayment(updatedData, fileData, file.name, file.type);
+          };
+
+          reader.readAsDataURL(file);
+      } else {
+          google.script.run.withSuccessHandler(function (response) {
+              alert(response.message);
+              if (response.success) {
+                  bootstrap.Modal.getInstance(document.getElementById("editRentPaymentsModal")).hide();
+                  refreshData();
+              }
+          }).updateRentPayment(updatedData, null, null, null);
+      }
+  }
+  function submitRecordRentPaymentForm() {
+      console.log("submitRecordRentPaymentForm() called!"); // Debug log
+
+      var rentPaymentID = document.getElementById("recordRentPaymentID").value; // Get the Rent Payment ID
+
+      var tenantData = {
+          "Rent Payment ID": rentPaymentID, // Use the correct ID from modal
+          "Unit Number": document.getElementById("recordRentUnitNumber").value,
+          "Tenant Name": document.getElementById("recordRentTenantName").value,
+          "Frequency": document.getElementById("recordRentFrequency").value,
+          "Payment Date": document.getElementById("recordRentPaymentDate").value,
+          "Amount": document.getElementById("recordRentAmount").value,
+          "Next Due Date": document.getElementById("recordRentNextDueDate").value,
+          "Status": document.getElementById("recordRentStatus").value,
+          "Notes": document.getElementById("recordRentNotes").value
+      };
+
+      console.log("Tenant Data being sent:", tenantData); // Debug log
+      console.log("Rent Payment ID being sent:", rentPaymentID); // Check the ID before sending
+
+      var fileInput = document.getElementById("recordRentReceiptFile");
+      if (fileInput.files.length > 0) {
+          var file = fileInput.files[0];
+          var reader = new FileReader();
+          reader.onload = function(e) {
+              var fileData = e.target.result;
+              console.log("File detected, uploading...");
+
+              google.script.run.withSuccessHandler(function(response) {
+                  console.log("Apps Script Response:", response);
+                  alert(response.message);
+                  if(response.success) {
+                      document.getElementById("recordRentPaymentForm").reset();
+                      var modal = bootstrap.Modal.getInstance(document.getElementById("recordRentPaymentModal"));
+                      modal.hide();
+                  }
+              }).recordRentPaymentFromRecordModal(tenantData, fileData, file.name, file.type);
+          };
+          reader.readAsDataURL(file);
+      } else {
+          console.log("No file detected, proceeding without upload...");
+
+          google.script.run.withSuccessHandler(function(response) {
+              console.log("Apps Script Response (No File):", response);
+              alert(response.message);
+              if(response.success) {
+                  document.getElementById("recordRentPaymentForm").reset();
+                  var modal = bootstrap.Modal.getInstance(document.getElementById("recordRentPaymentModal"));
+                  modal.hide();
+              }
+          }).recordRentPaymentFromRecordModal(tenantData, null, null, null);
+      }
+  }
+
+
+  function saveMaintenanceEdit() {
+    let index = document.getElementById("editMaintenanceIndex").value;
+    let updatedData = {
+      "Request ID": document.getElementById("editRequestID").value,
+      "Unit Number": document.getElementById("editUnitNumber").value,
+      "Tenant Name": document.getElementById("editTenantName").value,
+      "Issue Description": document.getElementById("editIssueDescription").value,
+      "Date Submitted": document.getElementById("editDateSubmitted").value,
+      "Status": document.getElementById("editMaintenanceStatus").value,
+      "Date Resolved": document.getElementById("editDateResolved").value,
+      "Days to Complete": document.getElementById("editDaysToComplete").value,
+      "Notes": document.getElementById("editMaintenanceNotes").value
+    };
+
+    google.script.run.withSuccessHandler(function(response) {
+      alert(response.message);
+      if (response.success) {
+        bootstrap.Modal.getInstance(document.getElementById("editMaintenanceModal")).hide();
+        refreshData();
+      }
+    }).updateMaintenanceRequest(maintenanceData[index], updatedData);
+  }
+
+  function saveBuildingMaintenanceEdit() {
+    let index = document.getElementById("editBuildingIndex").value;
+    let updatedData = {
+      "Maintenance REQ ID": document.getElementById("editBuildingReqID").value,
+      "Task Name": document.getElementById("editBuildingTaskName").value,
+      "Due Date": document.getElementById("editBuildingDueDate").value,
+      "Completion Status": document.getElementById("editBuildingStatus").value,
+      "Expense Amount": document.getElementById("editBuildingExpense").value,
+      "Date Completed": document.getElementById("editBuildingDateCompleted").value,
+      "Notes": document.getElementById("editBuildingNotes").value
+    };
+
+    google.script.run.withSuccessHandler(function(response) {
+      alert(response.message);
+      if (response.success) {
+        bootstrap.Modal.getInstance(document.getElementById("editBuildingMaintenanceModal")).hide();
+        refreshData();
+      }
+    }).updateBuildingMaintenance(buildingMaintenanceData[index], updatedData);
+  }
+  function refreshData() {
+    loadDashboard();
+    loadTenants();
+    loadRentPayments();
+    loadMaintenanceRequests();
+    loadBuildingMaintenanceRecords();
+  }
+  
+  document.addEventListener("DOMContentLoaded", function() {
+    loadDashboard();
+    loadTenants();
+    loadRentPayments(); // 🔹 Ensure this is called
+    loadMaintenanceRequests(); // 🔹 Ensure this is called on page load
+    loadBuildingMaintenanceRecords();
+    addSortingToHeaders();
+    fetchRentDueData();
+    //console.log("DOM Loaded. Running verifyUserAccess...");
+    verifyUserAccess();
+    document.getElementById("openTenantModalBtn").addEventListener("click", openTenantModal);
+    document.getElementById("openRentPaymentModalBtn").addEventListener("click", openRentPaymentModal);
+    document.getElementById("submitTenantFormBtn").addEventListener("click", submitTenantForm);
+    document.getElementById("rentPaymentDate").addEventListener("change", calculateNextDueDate);
+    document.getElementById("rentFrequency").addEventListener("change", calculateNextDueDate);
+    document.getElementById("submitRentPaymentFormBtn").addEventListener("click", submitRentPaymentForm);
+    document.getElementById("openMaintenanceModalBtn").addEventListener("click", openMaintenanceModal);
+    document.getElementById("submitMaintenanceFormBtn").addEventListener("click", submitMaintenanceForm);
+    document.getElementById("openBuildingMaintenanceModalBtn").addEventListener("click", openBuildingMaintenanceModal);
+    document.getElementById("submitBuildingMaintenanceFormBtn").addEventListener("click", submitBuildingMaintenanceForm);
+    document.getElementById("editDateResolved").addEventListener("change", calculateDaysToComplete);
+    document.getElementById("recordRentPaymentDate").addEventListener("change", calculateNextDueDateForRecordModal);
+    document.getElementById("submitRecordRentPaymentFormBtn").addEventListener("click", submitRecordRentPaymentForm);
+
+
+    document.addEventListener("DOMContentLoaded", verifyUserAccess);
+
+    const searchBox = document.getElementById("searchBox");
+      const clearSearchBtn = document.getElementById("clearSearchBtn");
+
+      searchBox.addEventListener("input", function () {
+        filterTables(searchBox.value.toLowerCase());
+      });
+
+      clearSearchBtn.addEventListener("click", function () {
+        searchBox.value = "";
+        filterTables(""); // Reset tables
+      });
+
+      function filterTables(query) {
+        // Get all tables that need searching
+        const tables = [
+          "tenantsTable",
+          "endedLeaseTable",
+          "rentPaymentsTable",
+          "rentDueTable",
+          "maintenanceTable",
+          "buildingMaintenanceTable"
+        ];
+
+        tables.forEach(tableId => {
+          const table = document.getElementById(tableId);
+          if (table) {
+            const rows = table.getElementsByTagName("tr");
+            for (let i = 1; i < rows.length; i++) { // Skip header row
+              let rowText = rows[i].textContent.toLowerCase();
+              if (rowText.includes(query)) {
+                rows[i].style.display = "";
+              } else {
+                rows[i].style.display = "none";
+              }
+            }
+          }
+        });
+      }
+  });
+  </script>
+</body>
+
+</html>
