@@ -102,9 +102,9 @@ function getAllTenants() {
  * Uses htmlBody to format the email nicely.
  */
 function sendTenantWelcomeEmail(data) {
-  var propertyManagerEmail = "bmapartment251@gmail.com";
-  var propertyManagerPhone = "+251911249766";
-  var apartmentName = "BM Apartment";
+  var propertyManagerEmail = "Manger_email@gmail.com";
+  var propertyManagerPhone = "+Phone_Number";
+  var apartmentName = "Apartment";
 
   var subject = `Welcome to ${apartmentName} - Your Registration is Complete!`;
 
