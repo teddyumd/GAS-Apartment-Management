@@ -395,7 +395,7 @@ function recordRentPayment(data, fileData, fileName, fileType) {
       if (parts.length === 2) {
         var decoded = Utilities.base64Decode(parts[1]);
         var blob = Utilities.newBlob(decoded, fileType, fileName);
-        var folder = DriveApp.getFolderById("1yT4IKjaDXaLSvPcZdups-L75CpoBr5pK");
+        var folder = DriveApp.getFolderById("Replace with your Drive folder ID");  //Replace with your Drive folder ID
         var uploadedFile = folder.createFile(blob);
         paymentUrl = uploadedFile.getUrl();
       }
@@ -761,7 +761,7 @@ function updateRentPayment(updatedData, fileData, fileName, fileType) {
       if (parts.length === 2) {
         var decoded = Utilities.base64Decode(parts[1]);
         var blob = Utilities.newBlob(decoded, fileType, fileName);
-        var folder = DriveApp.getFolderById("1yT4IKjaDXaLSvPcZdups-L75CpoBr5pK");  // Replace with your Drive folder ID
+        var folder = DriveApp.getFolderById("Replace with your Drive folder ID");  // Replace with your Drive folder ID
         var uploadedFile = folder.createFile(blob);
         newURL = uploadedFile.getUrl();
       }
@@ -1024,7 +1024,7 @@ function recordRentPaymentFromRecordModal(data, fileData, fileName, fileType) {
 
     // Handle file upload if provided
     if (fileData) {
-        var folder = DriveApp.getFolderById("1yT4IKjaDXaLSvPcZdups-L75CpoBr5pK"); // Update with your Drive folder ID
+        var folder = DriveApp.getFolderById("Replace with your Drive folder ID"); // Update with your Drive folder ID
         var file = folder.createFile(Utilities.newBlob(Utilities.base64Decode(fileData.split(",")[1]), fileType, fileName));
         newRow.push(file.getUrl());
     } else {
