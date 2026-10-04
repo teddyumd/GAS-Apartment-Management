@@ -41,9 +41,13 @@ Step 5: Add index.html
 Step 6: Deploy the Web App
 1. Click Deploy > New Deployment.  
 2. Under Select type, choose `Web App`.  
-3. Set Who has access to `Anyone`.  
-4. Click Deploy and authorize the script.  
-5. Copy the Web App URL and open it in a browser.  
+3. Set Execute as to `User accessing the web app`.  
+4. Set Who has access to `Anyone with Google account`.  
+5. Click Deploy and authorize the script.  
+6. Share the Google Sheet (and the Drive folder used for payment receipts) only with the property managers who should use the portal, and add each of their emails to the Access List sheet with the role `Property Manager`.  
+7. Copy the Web App URL and open it in a browser.  
+
+Why these settings matter: the script checks every request against the Access List using the signed-in user's email. If the app runs as the owner with access set to `Anyone`, the script cannot tell visitors apart and anyone with the URL could read or change tenant records.  
 
 ---
 
