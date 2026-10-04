@@ -1,12 +1,15 @@
 // Code.gs
 
+var ALLOWED_PAGES_ = ['index'];
+
 function doGet(e) {
-  var page = e.parameter.page || 'index';
+  var page = (e && e.parameter && e.parameter.page) || 'index';
+  if (ALLOWED_PAGES_.indexOf(page) === -1) page = 'index';
   return HtmlService.createHtmlOutputFromFile(page)
     .setTitle('BM Apartment Portal');
 }
 
-function getSheet(sheetName) {
+function getSheet_(sheetName) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   if (!sheet) {
     Logger.log("Sheet not found: " + sheetName);
@@ -15,12 +18,13 @@ function getSheet(sheetName) {
 }
 
 function getDashboardData() {
+  requireAccess_();
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var tenantsSheet = getSheet("Tenants");
-    var unitsSheet = getSheet("Units");
-    var maintenanceSheet = getSheet("Maintenance Requests");
-    var rentSheet = getSheet("Rent Payments");
+    var tenantsSheet = getSheet_("Tenants");
+    var unitsSheet = getSheet_("Units");
+    var maintenanceSheet = getSheet_("Maintenance Requests");
+    var rentSheet = getSheet_("Rent Payments");
 
     if (!tenantsSheet || !unitsSheet || !maintenanceSheet || !rentSheet) {
       throw new Error("One or more sheets not found!");
@@ -76,8 +80,9 @@ function getDashboardData() {
 
 
 function getAllTenants() {
+  requireAccess_();
   try {
-    var sheet = getSheet("Tenants");
+    var sheet = getSheet_("Tenants");
     if (!sheet) throw new Error('Sheet "Tenants" not found');
     var lastRow = sheet.getLastRow();
     if (lastRow < 2) return JSON.stringify({ success: true, tenants: [] });
@@ -101,7 +106,7 @@ function getAllTenants() {
  * Sends a welcome email to the tenant.
  * Uses htmlBody to format the email nicely.
  */
-function sendTenantWelcomeEmail(data) {
+function sendTenantWelcomeEmail_(data) {
   var propertyManagerEmail = "Manger_email@gmail.com";
   var propertyManagerPhone = "+Phone_Number";
   var apartmentName = "Apartment";
@@ -141,6 +146,7 @@ function sendTenantWelcomeEmail(data) {
 
 // Generates a new Request ID based on the last record in the Maintenance Requests sheet.
 function getNewRequestID() {
+  requireAccess_();
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName("Maintenance Requests");
   if (!sheet) {
@@ -166,6 +172,7 @@ function getNewRequestID() {
 // Records a maintenance request in the Maintenance Requests sheet.
 // It auto-generates the Request ID and sets the Date Submitted to today.
 function recordMaintenanceRequest(data) {
+  requireAccess_();
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName("Maintenance Requests");
@@ -196,6 +203,7 @@ function recordMaintenanceRequest(data) {
 }
 
 function getMaintenanceRequests() {
+  requireAccess_();
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Maintenance Requests");
     if (!sheet) {
@@ -233,11 +241,12 @@ function getMaintenanceRequests() {
 }
 
 function registerTenant(data) {
+  requireAccess_();
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var tenantsSheet = getSheet('Tenants');
-    var accessSheet = getSheet('Access List');
-    var unitsSheet = getSheet('Units');
+    var tenantsSheet = getSheet_('Tenants');
+    var accessSheet = getSheet_('Access List');
+    var unitsSheet = getSheet_('Units');
 
     if (!tenantsSheet || !accessSheet || !unitsSheet) {
       throw new Error('One or more sheets not found!');
@@ -276,7 +285,7 @@ function registerTenant(data) {
     }
 
     // Send welcome email
-    sendTenantWelcomeEmail(data);
+    sendTenantWelcomeEmail_(data);
 
     return { success: true, message: 'Tenant registered successfully! Unit marked as Rented.' };
 
@@ -287,11 +296,12 @@ function registerTenant(data) {
 }
 
 function markTenantAsLeft(email, unitNumber) {
+  requireAccess_();
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var tenantsSheet = getSheet("Tenants");
-    var unitsSheet = getSheet("Units");
-    var accessSheet = getSheet("Access List");
+    var tenantsSheet = getSheet_("Tenants");
+    var unitsSheet = getSheet_("Units");
+    var accessSheet = getSheet_("Access List");
 
     if (!tenantsSheet || !unitsSheet || !accessSheet) {
       throw new Error("One or more sheets not found!");
@@ -353,7 +363,7 @@ function markTenantAsLeft(email, unitNumber) {
   }
 }
 
-function addMonthsServer(date, months) {
+function addMonthsServer_(date, months) {
   var d = new Date(date);
   var day = d.getDate();
   d.setMonth(d.getMonth() + months);
@@ -363,8 +373,9 @@ function addMonthsServer(date, months) {
   return d;
 }
 function recordRentPayment(data, fileData, fileName, fileType) {
+  requireAccess_();
   try {
-    var rentSheet = getSheet("Rent Payments");
+    var rentSheet = getSheet_("Rent Payments");
     if (!rentSheet) {
       throw new Error("Rent Payments sheet not found!");
     }
@@ -384,7 +395,7 @@ function recordRentPayment(data, fileData, fileName, fileType) {
       "Monthly": 1, "Every 2 Months": 2, "Every 3 Months": 3, "Every 4 Months": 4,
       "Every 6 Months": 6, "Yearly": 12
     }[data.frequency] || 1;
-    var nextDueDate = addMonthsServer(paymentDateObj, monthsToAdd);
+    var nextDueDate = addMonthsServer_(paymentDateObj, monthsToAdd);
     var formattedNextDueDate = Utilities.formatDate(nextDueDate, "Africa/Nairobi", "MMMM, d, yyyy");
 
     // Upload receipt if provided
@@ -424,9 +435,10 @@ function recordRentPayment(data, fileData, fileName, fileType) {
 }
 
 function getAggregatedRentPayments() {
+  requireAccess_();
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var rentSheet = getSheet("Rent Payments");
+    var rentSheet = getSheet_("Rent Payments");
     if (!rentSheet) {
       throw new Error("Rent Payments sheet not found!");
     }
@@ -489,8 +501,9 @@ function getAggregatedRentPayments() {
 }
 
 function getTenantDetails(unitNumber) {
+  requireAccess_();
   try {
-    var sheet = getSheet("Tenants");
+    var sheet = getSheet_("Tenants");
     if (!sheet) throw new Error("Tenants sheet not found!");
 
     var data = sheet.getDataRange().getValues();
@@ -529,8 +542,9 @@ function getTenantDetails(unitNumber) {
 }
 
 function getNextRentPaymentIDAndTenants() {
-  var rentSheet = getSheet("Rent Payments");
-  var tenantSheet = getSheet("Tenants");
+  requireAccess_();
+  var rentSheet = getSheet_("Rent Payments");
+  var tenantSheet = getSheet_("Tenants");
   if (!rentSheet || !tenantSheet) throw new Error("Sheet not found!");
 
   // Get next Rent Payment ID
@@ -564,8 +578,9 @@ function getNextRentPaymentIDAndTenants() {
 
 
 function getRentPayments() {
+  requireAccess_();
   try {
-    var sheet = getSheet("Rent Payments");
+    var sheet = getSheet_("Rent Payments");
     if (!sheet) throw new Error("Rent Payments sheet not found!");
 
     var data = sheet.getDataRange().getValues();
@@ -588,8 +603,9 @@ function getRentPayments() {
 }
 
 function getVacantUnits() {
+  requireAccess_();
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var unitsSheet = getSheet('Units');
+  var unitsSheet = getSheet_('Units');
   if (!unitsSheet) {
     return [];
   }
@@ -604,7 +620,8 @@ function getVacantUnits() {
     });
 }
 function getNewBuildingMaintenanceID() {
-  var sheet = getSheet("Building Maintenance");
+  requireAccess_();
+  var sheet = getSheet_("Building Maintenance");
   if (!sheet) {
     throw new Error("Building Maintenance sheet not found!");
   }
@@ -625,8 +642,9 @@ function getNewBuildingMaintenanceID() {
 }
 
 function recordBuildingMaintenance(data) {
+  requireAccess_();
   try {
-    var sheet = getSheet("Building Maintenance");
+    var sheet = getSheet_("Building Maintenance");
     if (!sheet) throw new Error("Building Maintenance sheet not found!");
 
     var newRequestID = getNewBuildingMaintenanceID();
@@ -653,8 +671,9 @@ function recordBuildingMaintenance(data) {
   }
 }
 function getBuildingMaintenanceRecords() {
+  requireAccess_();
   try {
-    var sheet = getSheet("Building Maintenance");
+    var sheet = getSheet_("Building Maintenance");
     if (!sheet) throw new Error("Building Maintenance sheet not found!");
 
     var data = sheet.getDataRange().getValues();
@@ -685,14 +704,16 @@ function getBuildingMaintenanceRecords() {
 
 // 🔹 Helper function to format dates as "Feb, 01, 2025"
 function formatDateDisplay(date) {
+  requireAccess_();
   if (!(date instanceof Date) || isNaN(date.getTime())) return "N/A";
 
   return date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }).replace(" ", ", ");
 }
 
 function deleteRentPayment(data) {
+  requireAccess_();
   try {
-    var sheet = getSheet("Rent Payments");
+    var sheet = getSheet_("Rent Payments");
     if (!sheet) throw new Error("Rent Payments sheet not found!");
 
     var dataRange = sheet.getDataRange().getValues();
@@ -713,8 +734,9 @@ function deleteRentPayment(data) {
 }
 
 function deleteMaintenanceRequest(data) {
+  requireAccess_();
   try {
-    var sheet = getSheet("Maintenance Requests");
+    var sheet = getSheet_("Maintenance Requests");
     if (!sheet) throw new Error("Maintenance Requests sheet not found!");
 
     var dataRange = sheet.getDataRange().getValues();
@@ -730,8 +752,9 @@ function deleteMaintenanceRequest(data) {
   }
 }
 function deleteBuildingMaintenance(data) {
+  requireAccess_();
   try {
-    var sheet = getSheet("Building Maintenance");
+    var sheet = getSheet_("Building Maintenance");
     if (!sheet) throw new Error("Building Maintenance sheet not found!");
 
     var dataRange = sheet.getDataRange().getValues();
@@ -747,8 +770,9 @@ function deleteBuildingMaintenance(data) {
   }
 }
 function updateRentPayment(updatedData, fileData, fileName, fileType) {
+  requireAccess_();
   try {
-    var sheet = getSheet("Rent Payments");
+    var sheet = getSheet_("Rent Payments");
     if (!sheet) throw new Error("Rent Payments sheet not found!");
 
     var dataRange = sheet.getDataRange().getValues();
@@ -798,8 +822,9 @@ function updateRentPayment(updatedData, fileData, fileName, fileType) {
 
 
 function updateMaintenanceRequest(oldData, updatedData) {
+  requireAccess_();
   try {
-    var sheet = getSheet("Maintenance Requests");
+    var sheet = getSheet_("Maintenance Requests");
     if (!sheet) throw new Error("Maintenance Requests sheet not found!");
 
     var dataRange = sheet.getDataRange().getValues();
@@ -828,8 +853,9 @@ function updateMaintenanceRequest(oldData, updatedData) {
 }
 
 function updateBuildingMaintenance(oldData, updatedData) {
+  requireAccess_();
   try {
-    var sheet = getSheet("Building Maintenance");
+    var sheet = getSheet_("Building Maintenance");
     if (!sheet) throw new Error("Building Maintenance sheet not found!");
 
     var dataRange = sheet.getDataRange().getValues();
@@ -855,6 +881,7 @@ function updateBuildingMaintenance(oldData, updatedData) {
   }
 }
 function getRentDueRecords() {
+  requireAccess_();
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Rent Payments");
     if (!sheet) {
@@ -942,47 +969,62 @@ function getRentDueRecords() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Access control
+//
+// Every function the web page can call runs requireAccess_() first, so the
+// check cannot be skipped by calling google.script.run from the browser
+// console. Session.getActiveUser() identifies the person using the app; this
+// requires the web app to be deployed with "Execute as: User accessing the
+// web app" (see README). Session.getEffectiveUser() must not be used here:
+// when the app runs as the owner it returns the owner's email for everyone.
+// ---------------------------------------------------------------------------
+var ALLOWED_ROLES_ = ['property manager'];
+var accessCache_ = null;
+
+function getAccess_() {
+  if (accessCache_) return accessCache_;
+
+  var userEmail = (Session.getActiveUser().getEmail() || '').trim().toLowerCase();
+  if (!userEmail) {
+    accessCache_ = { access: false, message: 'Please sign in with the Google account registered for this portal.' };
+    return accessCache_;
+  }
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Access List');
+  if (!sheet) {
+    accessCache_ = { access: false, message: 'Access List sheet not found.' };
+    return accessCache_;
+  }
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    var email = String(data[i][0] || '').trim().toLowerCase();
+    var role = String(data[i][1] || '').trim().toLowerCase();
+    if (email === userEmail) {
+      accessCache_ = ALLOWED_ROLES_.indexOf(role) !== -1
+        ? { access: true, email: userEmail }
+        : { access: false, message: 'Access Denied: Only Property Managers can access this application.' };
+      return accessCache_;
+    }
+  }
+
+  accessCache_ = { access: false, message: 'Access Denied: Your email is not registered.' };
+  return accessCache_;
+}
+
+function requireAccess_() {
+  var result = getAccess_();
+  if (!result.access) throw new Error(result.message);
+  return result.email;
+}
+
 function checkUserAccess() {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Access List");
-    if (!sheet) {
-        Logger.log("Access List sheet not found!");
-        return { access: false, message: "Access List sheet not found!" };
-    }
-
-    var data = sheet.getDataRange().getValues();
-    var userEmail = Session.getEffectiveUser().getEmail();
-    
-    // Debugging logs
-    if (!userEmail) {
-        Logger.log("Failed to get user email. Possible permission issue.");
-        return { access: false, message: "Error retrieving your email. Ensure you are logged in with the correct account." };
-    }
-
-    userEmail = userEmail.trim().toLowerCase(); // Normalize email format
-    Logger.log("Checking access for: " + userEmail);
-
-    for (var i = 1; i < data.length; i++) {
-        var email = (data[i][0] || "").trim().toLowerCase(); // Normalize stored emails
-        var role = (data[i][1] || "").trim().toLowerCase();  // Normalize stored roles
-
-        Logger.log("Checking email:", email, "| Role:", role);
-
-        if (email === userEmail) {
-            if (role === "property manager" || role === "tenant") {
-                Logger.log("Access granted to:", userEmail);
-                return { access: true, email: userEmail };
-            } else {
-                Logger.log("Access denied: Invalid role", role);
-                return { access: false, message: "Access Denied: Only Property Managers can access this application." };
-            }
-        }
-    }
-
-    Logger.log("Access denied: Email not found");
-    return { access: false, message: "Access Denied: Your email is not registered." };
+  return getAccess_();
 }
 
 function getNextRentPaymentID() {
+  requireAccess_();
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Rent Payments");
     if (!sheet) {
         return "Rent Pay ID 100";
@@ -997,6 +1039,7 @@ function getNextRentPaymentID() {
 
 
 function recordRentPaymentFromRecordModal(data, fileData, fileName, fileType) {
+  requireAccess_();
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Rent Payments");
     if (!sheet) {
         return { success: false, message: "Rent Payments sheet not found!" };
